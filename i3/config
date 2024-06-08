@@ -105,16 +105,24 @@ bindsym $mod+space focus mode_toggle
 # focus the parent container
 bindsym $mod+a focus parent
 
+
+# change windows
+bindsym $mod+Tab exec rofi -show window
+
+# change workspaces
+bindsym Mod1+Tab workspace next
+bindsym Mod1+Shift+Tab workspace prev
+
 # focus the child container
 #bindsym $mod+d focus child
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-set $ws1 "1: Home"
-set $ws2 "2: Browser"
-set $ws3 "3: Programming"
-set $ws4 "4: Terminal"
-set $ws5 "5: Music"
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
 set $ws6 "6"
 set $ws7 "7"
 set $ws8 "8"
@@ -183,9 +191,9 @@ bindsym $mod+shift+x exec i3lock
 # finds out, if available)i
 
 set $background       #2E3440
-set $foreground       #C5C8C6
+set $foreground       #A89984
 set $primary          #4C566A
-set $secondary        #434C5E
+set $secondary        #A89984
 set $inactive         #222222
 set $none             #00000000
 #######################
@@ -201,10 +209,10 @@ client.placeholder      $none    $none   $none   $none       $none
 client.background       $none
 
 # add gaps between windows 
-gaps inner 15
+gaps inner 10
 
 # remove title bar from windows
-for_window [class=".*"] border pixel 2
+for_window [class=".*"] border pixel 3
 
 
 # Sreen brightness controls
@@ -224,6 +232,8 @@ exec --no-startup-id picom -b
 exec_always feh --bg-scale /home/tapiwa/Pictures/wallpaper.jpg
 exec_always --no-startup-id /home/tapiwa/.config/polybar/launch.sh
 exec_always autotiling
+exec_always --no-startup-id dunst -config ~/.config/dunst/dunstrc 
+
 assign [class="Code"] $ws3
 assign [class="Brave-browser"] $ws2
 assign [class="Gnome-terminal"] $ws4

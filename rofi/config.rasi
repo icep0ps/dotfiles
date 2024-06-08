@@ -3,20 +3,20 @@ configuration {
   display-drun: "Applications:";
   display-window: "Windows:";
   drun-display-format: "{name}";
-  font: "JetBrainsMono Nerd Font Medium 10";
-  show-icons:true;
+  font: "SpaceMono Nerd Font 10";
+  show-icons:false;
   icon-theme:"Papirus";
 }
 
 @theme "/dev/null"
 
 * {
-  bg: #1E1E2E99;
-  bg-alt: #585b7066;
-  bg-selected: #31324466;
+  bg: #282828;
+  bg-alt:#d65d0e;
+  bg-selected: #a89984;
 
-  fg: #cdd6f4;
-  fg-alt: #7f849c;
+  fg: #ebdbb2;
+  fg-alt: #ebdbb2;
 
   
   border: 0;
@@ -26,7 +26,7 @@ configuration {
 }
 
 window {
-  width:45%;
+  width:25%;
   background-color: @bg;
 }
 
