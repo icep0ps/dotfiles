@@ -209,7 +209,7 @@ client.placeholder      $none    $none   $none   $none       $none
 client.background       $none
 
 # add gaps between windows 
-gaps inner 10
+gaps inner 5 
 
 # remove title bar from windows
 for_window [class=".*"] border pixel 3
@@ -231,7 +231,7 @@ bindsym XF86AudioPrev exec playerctl previous
 exec --no-startup-id picom -b
 exec_always feh --bg-scale /home/tapiwa/Pictures/wallpaper.jpg
 exec_always --no-startup-id /home/tapiwa/.config/polybar/launch.sh
-exec_always autotiling
+exec_always --no-startup-id autotiling
 exec_always --no-startup-id dunst -config ~/.config/dunst/dunstrc 
 
 assign [class="Code"] $ws3

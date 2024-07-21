@@ -107,7 +107,7 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 #
-neofetch --off
+neofetch
 
 export PATH=$PATH:/home/tapiwa/.spicetify
 
@@ -117,7 +117,7 @@ export NVM_DIR="$HOME/.nvm"
 
 
 export PATH="$PATH:/home/tapiwa/.cargo/bin"
-export PATH="$PATH:/opt/nvim/"
+export PATH="$PATH:/opt/nvim/:/usr/share/zig/:/home/tapiwa/.local/bin"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

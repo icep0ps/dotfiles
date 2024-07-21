@@ -15,4 +15,4 @@ echo "Shutdown"
 echo "Restart"
 echo "Hibernate"
 
-echo -en "\0prompt\x1f Power menu: \n"
+echo -en "\0prompt\x1f Power menu\n"

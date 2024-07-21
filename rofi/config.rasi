@@ -15,7 +15,7 @@ configuration {
   bg-alt:#d65d0e;
   bg-selected: #a89984;
 
-  fg: #ebdbb2;
+  fg: #d65d0e;
   fg-alt: #ebdbb2;
 
   
@@ -37,8 +37,8 @@ element {
 }
 
 element selected {
-  text-color: @fg;
-  background-color: @bg-selected;
+  text-color: #000;
+  background-color: @fg-alt;
 }
 
 element-text {
@@ -56,7 +56,7 @@ element-icon {
 entry {
   padding: 12;
   background-color: @bg-alt;
-  text-color: @fg;
+  text-color: #FFFF;
 }
 
 inputbar {
@@ -79,6 +79,6 @@ prompt {
   enabled: true;
   padding: 12 0 0 12;
   background-color: @bg-alt;
-  text-color: @fg;
+  text-color: #FFF;
 }
 

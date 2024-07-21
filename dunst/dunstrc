@@ -315,7 +315,7 @@
     # Icon for notifications with critical urgency, uncomment to enable
     #icon = /path/to/icon
 [spotify]
-    appname = "spotify_player"
+    appname = "spotifyd"
     background = "#282828"
     foreground = "#ebdbb2"
     frame_color = "#fe8919"
