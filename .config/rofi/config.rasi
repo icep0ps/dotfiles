@@ -1,0 +1,96 @@
+configuration {
+  display-drun: "Applications:";
+  display-window: "Windows:";
+  drun-display-format: "{name}";
+  font: "JetBrainsMono Nerd Font 8";
+  show-icons:true;
+  icon-theme:"Gruvbox";
+}
+
+@theme "/dev/null"
+
+* {
+  /* Colors from original theme */
+  bg: #161616; /* General background */
+  bg-alt: #262626; /* Used for entry/prompt background in new theme */
+  bg-selected: #08bdba; /* Used for selected element background in new theme */
+
+  fg: #78a9ff; /* Used for prompt text in new theme (from original prompt color) */
+  fg-alt: #f2f4f8; /* Used for general text/element text (from original text-color) */
+
+  /* General properties from new theme */
+  border: 0;
+  margin: 0;
+  padding: 0;
+  spacing: 0;
+}
+
+window {
+  width:25%;
+  background-color: @bg;
+}
+
+element {
+  padding: 8 12;
+  background-color: transparent; /* Keep transparent as listview has solid background */
+  text-color: @fg-alt;
+}
+
+element selected {
+  background-color: @bg-selected; /* Use the new bg-selected variable */
+  text-color: #161616; /* Keep original selected text color */
+}
+
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+  vertical-align: 0.5;
+}
+
+entry {
+  padding: 12;
+  background-color: @bg-alt; /* Use the new bg-alt variable */
+  text-color: #f2f4f8; /* Keep original entry text color */
+}
+
+inputbar {
+  children: [prompt, entry];
+  background-color: @bg; /* Use the new bg variable */
+}
+
+listview {
+  background-color: @bg; /* Use the new bg variable */
+  columns: 1;
+  lines: 8;
+  border-top: 0; /* Ensure no top border, as in the previous fix */
+}
+
+mainbox {
+  children: [inputbar, listview];
+  background-color: @bg; /* Use the new bg variable */
+}
+
+prompt {
+  enabled: true;
+  padding: 12 0 0 12;
+  background-color: @bg-alt; /* Use the new bg-alt variable */
+  text-color: #ffffff; /* Keep original message text color for prompt */
+}
+
+/* Adding scrollbar and message styles from original theme for completeness */
+scrollbar {
+  handle-color: #393939;
+  handle-width: 4px;
+}
+
+message {
+  background-color: @bg; /* Use the new bg variable */
+  text-color: #ffffff; /* Keep original message text color */
+  padding: 4px; /* Keep original message padding */
+}
+
+element-icon {
+  size: 12;
+  padding: 0 10 0 0;
+  background-color: transparent;
+}
