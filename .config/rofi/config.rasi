@@ -9,16 +9,11 @@ configuration {
 
 @theme "/dev/null"
 
+
+@import "colors.rasi"
+
+
 * {
-  /* Colors from original theme */
-  bg: #161616; /* General background */
-  bg-alt: #262626; /* Used for entry/prompt background in new theme */
-  bg-selected: #08bdba; /* Used for selected element background in new theme */
-
-  fg: #78a9ff; /* Used for prompt text in new theme (from original prompt color) */
-  fg-alt: #f2f4f8; /* Used for general text/element text (from original text-color) */
-
-  /* General properties from new theme */
   border: 0;
   margin: 0;
   padding: 0;

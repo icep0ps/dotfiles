@@ -215,5 +215,12 @@ gaps inner 5
 # remove title bar from windows
 for_window [class=".*"] border pixel 3
 
+
+
+
+# screenshot (saves to clipboard and a file in ~/screenshots)
+# key: PrtSc
+bindsym Print exec NOW=$(date +%d-%b-%Y_%H-%M-%S) && maim --noopengl --format png --select > ~/Pictures/screenshots/screenshot_$NOW.png && xclip -selection clip -t image/png ~/Pictures/screenshots/screenshot_$NOW.png
+
 exec_always feh --bg-scale $HOME/Pictures/wallpaper.jpg
 exec_always bash ~/.config/polybar/launch.sh
