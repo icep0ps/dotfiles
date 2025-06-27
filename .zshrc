@@ -101,7 +101,7 @@ source $ZSH/oh-my-zsh.sh
 #
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+alias code="cd $HOME/Documents/Coding/"
 export PATH="/home/overlord/.config/herd-lite/bin:$PATH"
 export PHP_INI_SCAN_DIR="/home/overlord/.config/herd-lite/bin:$PHP_INI_SCAN_DIR"
 neofetch

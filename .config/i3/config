@@ -194,7 +194,7 @@ bindsym $mod+r mode "resize"
 set $background       #2E3440
 set $foreground       #A89984
 set $primary          #4C566A
-set $secondary        #A89984
+set $secondary        #FFFFFF
 set $inactive         #222222
 set $none             #00000000
 #######################
@@ -210,7 +210,7 @@ client.placeholder      $none    $none   $none   $none       $none
 client.background       $none
 
 # add gaps between windows 
-gaps inner 5
+gaps inner 10
 
 # remove title bar from windows
 for_window [class=".*"] border pixel 3
