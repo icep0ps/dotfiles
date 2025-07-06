@@ -16,6 +16,9 @@ window {
     border-color:           @bg1;
     location:               center;
     y-offset:               -2em;
+    border:                 2px;
+    border-radius:          0px;
+    border-color:           @bg-selected;
 }
 
 entry {

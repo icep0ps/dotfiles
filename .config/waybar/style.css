@@ -1,0 +1,128 @@
+@define-color background_color #0f0f0f;
+@define-color primary_background #0a0a0a;
+
+@define-color module_bg_1 #0d0d0d;
+@define-color module_bg_2 #151515;
+@define-color module_bg_3 #1d1d1d;
+@define-color module_bg_4 #252525;
+@define-color module_bg_5 #2d2d2d;
+@define-color module_bg_6 #353535;
+@define-color module_bg_7 #3d3d3d;
+
+@define-color text_color #ffffff;
+@define-color active_workspace_bg #3ddbd9;
+@define-color active_workspace_text #000000;
+@define-color urgent_workspace_bg #ff6188;
+@define-color occupied_workspace_bg #2a2a2a;
+@define-color empty_workspace_text #6a6a6a;
+@define-color hidden_workspace_text #4a4a4a;
+
+* {
+  font-family:
+    "JetBrainsMono Nerd Font", "Iosevka Nerd Font", monospace, sans-serif;
+  font-size: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+window#waybar {
+  background: @primary_background;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+#workspaces,
+#pulseaudio,
+#battery,
+#network,
+#memory,
+#clock,
+#custom-power,
+#custom-spotify {
+  padding-left: 4px;
+  padding-right: 4px;
+  margin: 0;
+}
+
+#custom-spotify {
+  color: @active_workspace_text;
+  padding-left: 6px;
+  padding-right: 6px;
+  background: @text_color;
+}
+
+#workspaces button {
+  border: none;
+  border-radius: 0;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: normal;
+}
+
+#workspaces button.occupied {
+  background: @module_bg_3;
+  color: @text_color;
+  border-radius: 0;
+}
+
+#workspaces button.focused {
+  background: @active_workspace_bg;
+  color: @active_workspace_text;
+  border-radius: 0;
+}
+
+#workspaces button.hidden {
+  background: @background_color;
+  color: @hidden_workspace_text;
+  border-radius: 0;
+}
+
+#pulseaudio {
+  background: @module_bg_6;
+  color: @text_color;
+  padding: 0 8px;
+  border: none;
+}
+
+#battery {
+  background: @module_bg_5;
+  color: @text_color;
+  padding: 0 8px;
+  border: none;
+}
+
+#network {
+  background: @module_bg_4;
+  color: @text_color;
+  padding: 0 8px;
+  border: none;
+}
+
+#memory {
+  background: @module_bg_3;
+  color: @text_color;
+  padding: 0 8px;
+  border: none;
+}
+
+#clock {
+  background: @module_bg_2;
+  color: @text_color;
+  padding: 0 8px;
+  border: none;
+}
+
+#custom-power {
+  background: @active_workspace_bg;
+  color: @active_workspace_text;
+  padding: 0 8px;
+  border: none;
+  font-weight: 200;
+}
+
+#battery.full,
+#battery.charging,
+#pulseaudio.muted {
+  color: @text_color;
+}

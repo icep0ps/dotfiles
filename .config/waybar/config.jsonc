@@ -1,0 +1,67 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 25,
+  "reload_style_on_change": true,
+  "modules-left": ["sway/workspaces"],
+  "modules-center": ["custom/spotify"],
+  "modules-right": [
+    "pulseaudio",
+    "battery",
+    "network",
+    "memory",
+    "clock",
+    "custom/power",
+  ],
+
+  "sway/workspaces": {
+    "format": "[{index}]",
+  },
+
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": " Muted",
+    "format-icons": {
+      "default": ["", "", ""],
+    },
+    "scroll-step": 5,
+  },
+
+  "battery": {
+    "format": "{icon} {capacity}%",
+    "format-charging": " {capacity}%",
+    "format-discharging": "{icon} {capacity}%",
+    "format-icons": ["", "", "", "", ""],
+    "format-full": "  100%",
+    "interval": 30,
+  },
+
+  "network": {
+    "interface": "wlp3s0",
+    "format-wifi": "  {essid} ({signalStrength}%)",
+    "format-ethernet": "󰈀  Wired",
+    "format-disconnected": "󰤮  Disconnected",
+    "interval": 10,
+  },
+
+  "memory": {
+    "format": "  {used} MiB",
+    "interval": 3,
+  },
+
+  "clock": {
+    "format": "  {:%I:%M %p}",
+    "interval": 60,
+  },
+
+  "custom/power": {
+    "format": "⏻",
+    "on-click": "${HOME}/.config/polybar/scripts/powermenu.sh",
+    "tooltip": false,
+  },
+  "custom/spotify": {
+    "exec": "${HOME}/.config/polybar/scripts/spotify-playerctl.sh",
+    "interval": 5,
+    "tooltip": false,
+  },
+}

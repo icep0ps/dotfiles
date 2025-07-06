@@ -1,0 +1,177 @@
+# Sway config (converted from i3)
+# See `man 5 sway` and https://github.com/swaywm/sway/wiki for details
+
+set $mod Mod4
+
+# Font
+font pango:JetBrainsMono Nerd Font 8
+
+# Wayland autostart replacements (dex is X11-only)
+# Recommended approach: use systemd user services instead.
+
+# System tray utilities: nm-applet is X11. Use wofi for launchers or networkmanager_dmenu.
+# You can still try nm-applet with `xwayland`, but alternatives are better.
+# exec nm-applet
+
+# Volume controls (PulseAudio/pipewire supported)
+bindsym XF86AudioRaiseVolume exec pamixer -i 10
+bindsym XF86AudioLowerVolume exec pamixer -d 10
+bindsym XF86AudioMute exec pamixer -t
+bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Floating window modifier
+floating_modifier $mod
+
+# Drag behavior
+tiling_drag modifier
+
+# Terminal
+bindsym $mod+Return exec kitty # replace with your preferred terminal (e.g., kitty, alacritty)
+
+# Kill window
+bindsym $mod+Shift+q kill
+
+# App launchers
+bindsym $mod+p exec "rofi -show drun"
+
+# Open power menue
+bindsym Mod1+F4 exec "${HOME}/.config/polybar/scripts/powermenu.sh"
+# bindsym Mod1+F4 exec "${HOME}/.config/waybar/scripts/restart-waybar.sh"
+
+# Toggle notifications center
+bindsym $mod+Shift+n exec swaync-client -t -sw
+
+# Focus movement
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+l focus up
+bindsym $mod+semicolon focus right
+
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# Move windows
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+l move up
+bindsym $mod+Shift+semicolon move right
+
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# Split orientation
+bindsym $mod+h split h
+bindsym $mod+v split v
+
+# Fullscreen
+bindsym $mod+f fullscreen toggle
+
+# Layout toggling
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# Floating toggle
+bindsym $mod+Shift+space floating toggle
+
+# Focus tiling/floating
+bindsym $mod+space focus mode_toggle
+
+# Focus parent
+bindsym $mod+a focus parent
+
+# Workspace setup
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+# Workspace switching
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+# Move windows to workspaces
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+# Config reload
+bindsym $mod+Shift+c reload
+# Restart sway
+bindsym $mod+Shift+r exec "rofi -show rice -modes "rice:$HOME/.config/rofi/scripts/restart-rice-menu.sh""
+# Exit sway session
+bindsym $mod+Shift+e exec "swaynag -t warning -m 'Do you really want to exit Sway?' -b 'Yes' 'swaymsg exit'"
+
+# Resize mode
+mode "resize" {
+    bindsym j resize shrink width 10px
+    bindsym k resize grow height 10px
+    bindsym l resize shrink height 10px
+    bindsym semicolon resize grow width 10px
+
+    bindsym Left resize shrink width 10px
+    bindsym Down resize grow height 10px
+    bindsym Up resize shrink height 10px
+    bindsym Right resize grow width 10px
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+r mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Wallpaper using swaybg (Wayland-compatible)
+exec_always swaybg -i $HOME/Pictures/wallpaper.jpg --mode fill
+
+# Gaps (requires sway-gaps fork or built-in support in some builds)
+gaps inner 10
+gaps outer 0
+
+# Window borders and colors
+client.focused          #FFFFFF #00000000 #00000000 #FFFFFF #FFFFFF
+client.focused_inactive #222222 #00000000 #00000000 #2E3440 #2E3440
+client.unfocused        #222222 #00000000 #00000000 #2E3440 #2E3440
+client.urgent           #00000000 #00000000 #00000000 #00000000 #00000000
+client.placeholder      #00000000 #00000000 #00000000 #00000000 #00000000
+client.background       #00000000
+
+# Remove titlebars
+for_window [class=".*"] border pixel 3
+
+# Screenshot using grim (Wayland)
+bindsym Print exec grim -g "$(slurp)" ~/Pictures/screenshots/screenshot_$(date +%F_%T).png
+
+# See Systemd and dbus activation environments:(https://github.com/swaywm/sway/wiki#systemd-and-dbus-activation-environments)
+exec systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK I3SOCK XCURSOR_SIZE XCURSOR_THEME
+
+# notifications
+exec swaync
+
+# Launch waybar
+exec waybar
+exec /usr/bin/lxpolkit 

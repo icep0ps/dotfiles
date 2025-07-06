@@ -1,91 +1,108 @@
 configuration {
-  display-drun: "Applications:";
-  display-window: "Windows:";
-  drun-display-format: "{name}";
-  font: "JetBrainsMono Nerd Font 8";
-  show-icons:true;
-  icon-theme:"Gruvbox";
+    display-drun: "Applications:";
+    display-window: "Windows:";
+    drun-display-format: "{name}";
+    font: "JetBrainsMono Nerd Font 8";
+    show-icons: true;
+    icon-theme: "Gruvbox";
+    case-sensitive: false;
+    matching: "fuzzy";
+    sort: true;
+    levenshtein-sort: true;
+    hide-scrollbar: true;
+    auto-select: false;           
+    me-select-with-click: false;   
+    hover-select: false;           
 }
 
 @theme "/dev/null"
 
-
 @import "colors.rasi"
 
-
 * {
-  border: 0;
-  margin: 0;
-  padding: 0;
-  spacing: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
 }
 
 window {
-  width:25%;
-  background-color: @bg;
+    width: 25%;
+    background-color: @bg;
 }
 
 element {
-  padding: 8 12;
-  background-color: transparent; /* Keep transparent as listview has solid background */
-  text-color: @fg-alt;
+    padding: 8 12;
+    background-color: transparent;
+    text-color: @fg-alt;
 }
 
 element selected {
-  background-color: @bg-selected; /* Use the new bg-selected variable */
-  text-color: #161616; /* Keep original selected text color */
+    background-color: @bg-selected;
+    text-color: #161616;
 }
 
 element-text {
-  background-color: transparent;
-  text-color: inherit;
-  vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+    vertical-align: 0.5;
 }
 
 entry {
-  padding: 12;
-  background-color: @bg-alt; /* Use the new bg-alt variable */
-  text-color: #f2f4f8; /* Keep original entry text color */
+    padding: 12;
+    background-color: @bg-alt;
+    text-color: #f2f4f8;
 }
 
 inputbar {
-  children: [prompt, entry];
-  background-color: @bg; /* Use the new bg variable */
+    children: [prompt, entry];
+    background-color: @bg;
 }
 
 listview {
-  background-color: @bg; /* Use the new bg variable */
-  columns: 1;
-  lines: 8;
-  border-top: 0; /* Ensure no top border, as in the previous fix */
+    background-color: @bg;
+    columns: 1;
+    lines: 8;
+    border-top: 0;
+    hide-scrollbar: true;
 }
 
 mainbox {
-  children: [inputbar, listview];
-  background-color: @bg; /* Use the new bg variable */
+    children: [inputbar, listview];
+    background-color: @bg;
 }
 
 prompt {
-  enabled: true;
-  padding: 12 0 0 12;
-  background-color: @bg-alt; /* Use the new bg-alt variable */
-  text-color: #ffffff; /* Keep original message text color for prompt */
+    enabled: true;
+    padding: 12 0 0 12;
+    background-color: @bg-alt;
+    text-color: #ffffff;
 }
 
-/* Adding scrollbar and message styles from original theme for completeness */
 scrollbar {
-  handle-color: #393939;
-  handle-width: 4px;
+    handle-color: #393939;
+    handle-width: 4px;
 }
 
 message {
-  background-color: @bg; /* Use the new bg variable */
-  text-color: #ffffff; /* Keep original message text color */
-  padding: 4px; /* Keep original message padding */
+    background-color: @bg;
+    text-color: @fg-alt;
+    padding: 8 12;
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+}
+
+textbox {
+    background-color: transparent;
+    text-color: inherit;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    padding: 0;
 }
 
 element-icon {
-  size: 12;
-  padding: 0 10 0 0;
-  background-color: transparent;
+    size: 12;
+    padding: 0 10 0 0;
+    background-color: transparent;
 }
