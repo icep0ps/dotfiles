@@ -1,0 +1,23 @@
+.container {
+  padding: 10px;
+}
+
+.album-art {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.album-art,
+.container {
+  border: 2px solid #3ddbd9;
+}
+
+progressbar > trough > progress {
+  color: #3ddbd9;
+  background-color: #3ddbd9;
+}
+
+.title {
+  font-weight: bold;
+}

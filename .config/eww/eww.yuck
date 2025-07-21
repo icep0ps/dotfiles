@@ -1,0 +1,132 @@
+(deflisten title :initial "Unkown song"
+  `playerctl --follow metadata --player=spotify_player --format {{title}}`)
+
+(deflisten artist :initial "Unkown song"
+  `playerctl --follow metadata --player=spotify_player --format {{artist}}`)
+
+(deflisten album :initial "Unkown song"
+  `playerctl --follow metadata --player=spotify_player --format {{album}}`)
+
+(deflisten time :initial "0:00"
+  `playerctl --follow metadata --player=spotify_player --format '{{duration(position)}}'`)
+
+(deflisten length :initial "--:--"
+  `playerctl --follow metadata --player=spotify_player --format '{{duration(mpris:length)}}'`)
+
+
+(defvar album_art "/home/overlord/.cache/spotify-player/image/YOUNG & RESTLESS-Josh P-cover-16fui2.jpg")
+
+(deflisten player_status :initial "Paused" "playerctl status --follow --player=spotify_player")
+
+(defpoll progress_percent :interval "2s" 
+  :initial "0" `$HOME/.config/eww/scripts/getProgressPercent.sh`) 
+
+
+(deflisten is_connteced `nmcli general status | awk 'NR==2, NR==2 {print $1}'`)
+(deflisten is_wifi_enabled `nmcli general status | awk 'NR==2, NR==2 {print $4}'`)
+(deflisten wifi_ssid `nmcli connection show | awk 'NR==2, NR==2 {print $1}'`)
+
+(defwidget spotify [] 
+  (box :class "container"
+       :orientation "horizontal"
+       :halign "start"
+       :spacing 10 :space-evenly false
+       :width 400
+    (image :path album_art
+           :class "album-art"
+           :image-height 100 
+           :image-width 100) 
+
+    (box :class "song-info"
+         :orientation "vertical"
+         :width 250
+         :halign "start"
+         :spacing 5 :space-evenly false :valign "center"
+      (label :text `${title} • ${artist}` :halign "start" :truncate true :limit-width 40 :class "title")
+      (label :text album :halign "start" :truncate true :limit-width 40) 
+      (box :orientation "horizontal" :spacing 5 
+        (button :onclick 'spotify_player playback shuffle ' "") 
+        (button :onclick 'spotify_player playback previous' "") 
+        (button :onclick "spotify_player playback play-pause" {player_status == "Playing" ? "" : ""}) 
+        (button :onclick "spotify_player playback next" "")
+        (button :onclick "spotify_player playback repeat" "󰑖"))
+      (box :class "progress-container" 
+           :orientation "vertical" :spacing 5
+        (progress :value progress_percent)
+        (box :orientation "horizontal"
+           (label :text time :halign "start")
+           (label :text length :halign "end"))))))
+
+(defwidget control_panel [] 
+  (box :orientation "vertical" :width 400 :height 300 
+       :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 20px"
+    (label :text "Control Center" :halign "start" :valign "start" :style "font-weight: bold")
+    (box :orientation "horizontal" :valign "start" :spacing 10 
+      (contorl_panel_toggle_button :icon "󰖩" :name "Wireless Connection" :status { is_wifi_enabled== "enabled" ? wifi_ssid : "Enabled"} :is_active true)
+      (contorl_panel_toggle_button :icon "󰂯" :name "Bluetooth" :status "Off" :is_active false))
+    (box :orientation "horizontal" :valign "start" :spacing 10 
+      (contorl_panel_toggle_button :icon "󰁹" :name "Battery Saver" :status "Off" :is_active false)
+      (contorl_panel_toggle_button :icon "󰀞" :name "Aireplane Mode" :status "Off" :is_active false))
+    (label :text "Disks" :halign "start" :valign "start" :style "font-weight: bold" :is_active false)
+    (box :orientation "vertical" :valign "start" :spacing 10 
+      (disk :icon "ROOT" :used_perc {EWW_DISK["/"]["used_perc"]} :used {EWW_DISK["/"]["used"]} :total {EWW_DISK["/"]["total"]})
+      (disk :icon "HOME" :used_perc {EWW_DISK["/home"]["used_perc"]} :used {EWW_DISK["/home"]["used"]} :total {EWW_DISK["/home"]["total"]}))))
+
+
+
+
+(defwidget contorl_panel_toggle_button [icon name status ?is_active] 
+  (eventbox :width 200  :halign "start" :height 50 :style "border: 2px solid #3ddbd9; padding: 10px;"
+    (box :orientation "horizontal" :halign "start" :space-evenly false :spacing 15 :style "padding:10px" 
+      (button :width 40 :height 40  :halign "start"  :style {is_active ? "border: 1px solid  #42ff65;" : "border: 1px solid #ee5396;" } icon)
+      (box :orientation "vertical" :space-evenly false :valign "center" 
+        (label :text name :halign "start" :style "font-weight: bold")
+        (label :text status :halign "start")))))
+
+(defwidget disk [icon used_perc used total] 
+  (box :width 400 :orientation "horizontal" :halign "start" :height 50 :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 10px"
+    (box :width 40 :height 40 :style "border: 2px solid #3ddbd9" :halign "start"
+            (label :text icon  :halign "center" :justify "center"))
+    (box :orientation "vertical" :space-evenly false :valign "center"
+       (progress :value used_perc :width 300)
+       (label :text "${round(used/1000000000,1)}/${round(total/1000000000,1)} GB" 
+              :halign "end" :style "font-weight: bold"))))
+
+(defwidget user [] 
+  (box :orientation "horizontal" 
+    (image :style "border: 2px solid #3ddbd9")
+    (box :orientation "horizontal" 
+      (label :text "Good Evening, icep0ps")
+      (label :text "You are currently listening to music"))))
+
+
+
+(defwindow music 
+           :monitor 0
+           :geometry (geometry :x "0%"
+                               :y "10px"
+                               :width "400px"
+                               :height "100px"
+                               :anchor "top center")
+           :stacking "fg"
+           :reserve (struts :distance "40px" :side "top")
+           :windowtype "dialog"
+           :wm-ignore false
+  (spotify))
+
+
+(defwindow control_center 
+           :monitor 0
+           :geometry (geometry :x "0%"
+                               :y "10px"
+                               :width "430px"
+                               :height "300px"
+                               :anchor "top right")
+           :stacking "fg"
+           :reserve (struts :distance "40px" :side "top")
+           :windowtype "dialog"
+           :wm-ignore false
+  (control_panel))
+
+
+

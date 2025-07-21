@@ -39,8 +39,7 @@ bindsym Mod1+F4 exec "${HOME}/.config/polybar/scripts/powermenu.sh"
 # bindsym Mod1+F4 exec "${HOME}/.config/waybar/scripts/restart-waybar.sh"
 
 # Toggle notifications center
-bindsym $mod+Shift+n exec swaync-client -t -sw
-
+bindsym $mod+Shift+n exec "${HOME}/.config/waybar/scripts/open_spotify_widget.sh"
 # Focus movement
 bindsym $mod+j focus left
 bindsym $mod+k focus down
@@ -162,6 +161,7 @@ client.background       #00000000
 
 # Remove titlebars
 for_window [class=".*"] border pixel 3
+
 
 # Screenshot using grim (Wayland)
 bindsym Print exec grim -g "$(slurp)" ~/Pictures/screenshots/screenshot_$(date +%F_%T).png

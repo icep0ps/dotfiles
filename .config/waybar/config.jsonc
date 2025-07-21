@@ -61,6 +61,9 @@
   },
   "custom/spotify": {
     "exec": "${HOME}/.config/polybar/scripts/spotify-playerctl.sh",
+    "on-click": "${HOME}/.config/waybar/scripts/open_spotify_widget.sh",
+    "max-length": 50,
+    "exec-on-event": true,
     "interval": 5,
     "tooltip": false,
   },
