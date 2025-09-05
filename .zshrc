@@ -113,5 +113,5 @@ export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 export EDGE_PATH="/usr/bin/brave" 
-export PATH=$PATH:$HOME/.maestro/bin
 export PATH=$PATH:$HOME/.local/share/eww
+export PATH=/home/overlord/.local/bin:/home/overlord/.sdkman/candidates/java/current/bin:/home/overlord/.nvm/versions/node/v18.20.8/bin:/sbin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/overlord/Android/Sdk/emulator:/home/overlord/Android/Sdk/platform-tools:/home/overlord/.maestro/bin:/home/overlord/.local/share/eww:.cargo/bin/

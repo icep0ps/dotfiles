@@ -4,7 +4,7 @@
   "height": 25,
   "reload_style_on_change": true,
   "modules-left": ["sway/workspaces"],
-  "modules-center": ["custom/spotify"],
+  "modules-center": ["custom/spotify", "custom/nordvpn"],
   "modules-right": [
     "pulseaudio",
     "battery",
@@ -50,8 +50,9 @@
   },
 
   "clock": {
-    "format": "  {:%I:%M %p}",
+    "format": "  {:%a %d %b, %I:%M %p}",
     "interval": 60,
+    "tooltip": false,
   },
 
   "custom/power": {
@@ -66,5 +67,12 @@
     "exec-on-event": true,
     "interval": 5,
     "tooltip": false,
+  },
+  "custom/nordvpn": {
+    "exec": "${HOME}/.config/waybar/scripts/nordvpn-status.sh",
+    "interval": 10,
+    "format": "{text}",
+    "tooltip": true,
+    "return-type": "json",
   },
 }

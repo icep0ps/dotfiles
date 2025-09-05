@@ -19,6 +19,10 @@ bindsym XF86AudioLowerVolume exec pamixer -d 10
 bindsym XF86AudioMute exec pamixer -t
 bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
 
+# Screen brightness controls (requires brightnessctl)
+bindsym XF86MonBrightnessUp exec brightnessctl set 5%+
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+
 # Floating window modifier
 floating_modifier $mod
 
@@ -39,7 +43,7 @@ bindsym Mod1+F4 exec "${HOME}/.config/polybar/scripts/powermenu.sh"
 # bindsym Mod1+F4 exec "${HOME}/.config/waybar/scripts/restart-waybar.sh"
 
 # Toggle notifications center
-bindsym $mod+Shift+n exec "${HOME}/.config/waybar/scripts/open_spotify_widget.sh"
+bindsym $mod+Shift+n exec "${HOME}/.config/eww/scripts/toggle-control-center.sh"
 # Focus movement
 bindsym $mod+j focus left
 bindsym $mod+k focus down
@@ -148,19 +152,19 @@ bindsym $mod+r mode "resize"
 exec_always swaybg -i $HOME/Pictures/wallpaper.jpg --mode fill
 
 # Gaps (requires sway-gaps fork or built-in support in some builds)
-gaps inner 10
+gaps inner 0
 gaps outer 0
 
 # Window borders and colors
 client.focused          #FFFFFF #00000000 #00000000 #FFFFFF #FFFFFF
-client.focused_inactive #222222 #00000000 #00000000 #2E3440 #2E3440
-client.unfocused        #222222 #00000000 #00000000 #2E3440 #2E3440
+client.focused_inactive #252525 #00000000 #00000000 #2E3440 #252525
+client.unfocused        #252525 #00000000 #00000000 #2E3440 #252525
 client.urgent           #00000000 #00000000 #00000000 #00000000 #00000000
 client.placeholder      #00000000 #00000000 #00000000 #00000000 #00000000
 client.background       #00000000
 
 # Remove titlebars
-for_window [class=".*"] border pixel 3
+for_window [class=".*"] border pixel 2
 
 
 # Screenshot using grim (Wayland)
@@ -169,9 +173,10 @@ bindsym Print exec grim -g "$(slurp)" ~/Pictures/screenshots/screenshot_$(date +
 # See Systemd and dbus activation environments:(https://github.com/swaywm/sway/wiki#systemd-and-dbus-activation-environments)
 exec systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK I3SOCK XCURSOR_SIZE XCURSOR_THEME
 
-# notifications
-exec swaync
+# Launch autotiling
+exec_always autotiling -w 1 3 5 7 9
+
 
 # Launch waybar
 exec waybar
-exec /usr/bin/lxpolkit 
+exec /usr/bin/lxpolkit

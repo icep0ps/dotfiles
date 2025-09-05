@@ -1,132 +1,248 @@
-(deflisten title :initial "Unkown song"
-  `playerctl --follow metadata --player=spotify_player --format {{title}}`)
+;; --- Music Player Variables --- 
+;; Defines variables to listen for updates from playerctl for song information. 
+(deflisten title :initial "Unknown song" `playerctl --follow metadata --player=spotify_player --format '{{title}}' || true`) 
+(deflisten artist :initial "Unknown artist" `playerctl --follow metadata --player=spotify_player --format '{{artist}}' || true`) 
+(deflisten album :initial "Unknown album" `playerctl --follow metadata --player=spotify_player --format '{{album}}' || true`) 
+(deflisten time :initial "0:00" `playerctl --follow metadata --player=spotify_player --format '{{duration(position)}}' || true`) 
+(deflisten length :initial "--:--" `playerctl --follow metadata --player=spotify_player --format '{{duration(mpris:length)}}' || true`) 
+(deflisten player_status :initial "Paused" `playerctl status --follow --player=spotify_player || true`) 
 
-(deflisten artist :initial "Unkown song"
-  `playerctl --follow metadata --player=spotify_player --format {{artist}}`)
+;; New variable to check if a player is running. 
+(deflisten is_player_active "playerctl --player=spotify_player status || echo \"false\"") 
 
-(deflisten album :initial "Unkown song"
-  `playerctl --follow metadata --player=spotify_player --format {{album}}`)
+;; Path for album art image file. 
+(defvar album_art_path "$HOME/.cache/spotify_album.jpg") 
 
-(deflisten time :initial "0:00"
-  `playerctl --follow metadata --player=spotify_player --format '{{duration(position)}}'`)
+;; Listens for album art URL and downloads the image to the specified path. 
+(deflisten album_art_url :initial "$HOME/.cache/spotify_album.jpg" 
+  "playerctl --follow metadata --player=spotify_player --format '{{mpris:artUrl}}' | while read url; do 
+    if [ -n \"$url\" ]; then 
+      curl -sL \"$url\" -o \"$HOME/.cache/spotify_album.jpg\" && echo \"$HOME/.cache/spotify_album.jpg\" 
+    fi 
+  done") 
 
-(deflisten length :initial "--:--"
-  `playerctl --follow metadata --player=spotify_player --format '{{duration(mpris:length)}}'`)
+;; --- Polls for the current song progress percentage. --- 
+(defpoll progress_percent :interval "2s" :initial "0" 
+  `current_time=$(playerctl metadata --player=spotify_player --format "{{ position }}" || echo "0"); 
+  duration=$(playerctl metadata --player=spotify_player --format "{{ mpris:length }}" || echo "1"); 
+  awk -v x=$current_time -v y=$duration 'BEGIN { if (y > 0) { printf ("%0.0f",x/y * 100) } else { printf ("0") }}'`) 
 
+;; --- Mako DND Variables --- 
+;; Polls for the current Mako mode to check if 'dnd' is active. 
+(defpoll is_dnd_enabled :interval "2s" `makoctl mode | grep 'dnd' &> /dev/null && echo "true" || echo "false"`) 
 
-(defvar album_art "/home/overlord/.cache/spotify-player/image/YOUNG & RESTLESS-Josh P-cover-16fui2.jpg")
+;; --- Network Variables --- 
+;; Listens for network connection status from nmcli. 
+(deflisten is_connected `nmcli general status | awk 'NR==2 {print $1}' || true`) 
+(deflisten is_wifi_enabled `nmcli general status | awk 'NR==2 {print $4}' || true`) 
+(deflisten wifi_ssid `nmcli connection show --active | awk 'NR==2 {print $1}' || true`) 
 
-(deflisten player_status :initial "Paused" "playerctl status --follow --player=spotify_player")
+;; Polls for available wifi networks and formats them as JSON
+(defpoll wifi_networks :interval "15s" `~/.config/eww/scripts/get_wifi.sh`)
 
-(defpoll progress_percent :interval "2s" 
-  :initial "0" `$HOME/.config/eww/scripts/getProgressPercent.sh`) 
+;; A variable to control the visibility of the wifi selector window
+(defvar show_wifi_selector false)
 
+;; Polls for Bluetooth power status. 
+(defpoll is_bluetooth_enabled :interval "5s" `bluetoothctl show | grep 'Powered: yes' &> /dev/null && echo "true" || echo "false"`) 
 
-(deflisten is_connteced `nmcli general status | awk 'NR==2, NR==2 {print $1}'`)
-(deflisten is_wifi_enabled `nmcli general status | awk 'NR==2, NR==2 {print $4}'`)
-(deflisten wifi_ssid `nmcli connection show | awk 'NR==2, NR==2 {print $1}'`)
+;; --- Disk Variables --- 
+;; Polls for disk usage of / and /home 
+(defpoll EWW_DISK :interval "10s" 
+  `df --output=pcent,used,size / /home | sed -n '2p;3p' | awk '{print $1" "$2" "$3}' | tr '\n' ' '`) 
 
+;; --- Widgets --- 
+;; The main Spotify player widget. 
 (defwidget spotify [] 
-  (box :class "container"
-       :orientation "horizontal"
-       :halign "start"
-       :spacing 10 :space-evenly false
-       :width 400
-    (image :path album_art
-           :class "album-art"
-           :image-height 100 
-           :image-width 100) 
-
-    (box :class "song-info"
-         :orientation "vertical"
-         :width 250
-         :halign "start"
-         :spacing 5 :space-evenly false :valign "center"
-      (label :text `${title} • ${artist}` :halign "start" :truncate true :limit-width 40 :class "title")
+  (box :class "container" 
+    :orientation "horizontal" 
+    :halign "start" 
+    :spacing 10 :space-evenly false 
+    :width 400 
+    (image :path album_art_url 
+      :class "album-art" 
+      :image-height 100 
+      :image-width 100) 
+    (box :class "song-info" 
+      :orientation "vertical" 
+      :width 250 
+      :halign "start" 
+      :spacing 5 :space-evenly false :valign "center" 
+      (label :text "${title} • ${artist}" :halign "start" :truncate true :limit-width 40 :class "title") 
       (label :text album :halign "start" :truncate true :limit-width 40) 
       (box :orientation "horizontal" :spacing 5 
-        (button :onclick 'spotify_player playback shuffle ' "") 
-        (button :onclick 'spotify_player playback previous' "") 
-        (button :onclick "spotify_player playback play-pause" {player_status == "Playing" ? "" : ""}) 
-        (button :onclick "spotify_player playback next" "")
-        (button :onclick "spotify_player playback repeat" "󰑖"))
+        (button :onclick "playerctl --player=spotify_player shuffle toggle" "") 
+        (button :onclick "playerctl --player=spotify_player previous" "") 
+        (button :onclick "playerctl --player=spotify_player play-pause" {player_status == "Playing" ? "" : ""}) 
+        (button :onclick "playerctl --player=spotify_player next" "") 
+        (button :onclick "playerctl --player=spotify_player repeat" "󰑖")) 
       (box :class "progress-container" 
-           :orientation "vertical" :spacing 5
-        (progress :value progress_percent)
-        (box :orientation "horizontal"
-           (label :text time :halign "start")
-           (label :text length :halign "end"))))))
+        :orientation "vertical" :spacing 5 
+        (progress :value progress_percent) 
+        (box :orientation "horizontal" 
+          (label :text time :halign "start") 
+          (label :text length :halign "end")))))) 
+
+(defpoll verse_text :interval "1h" 
+  "/home/overlord/.config/eww/scripts/get_verse.sh --text") 
+
+(defpoll verse_ref :interval "1h" 
+  "/home/overlord/.config/eww/scripts/get_verse.sh --ref") 
+
+(defwidget no-music [] 
+  (box 
+    :class "container" 
+    :orientation "vertical" 
+    :halign "start"  
+    :spacing 10 
+    :width 400 
+    :height 100 
+    (box 
+      :orientation "horizontal" 
+      :halign "start" 
+      :spacing 10 
+      :space-evenly false 
+      :width 400 
+      (box 
+        :class "song-info" 
+        :orientation "vertical" 
+        :width 250 
+        :halign "start"  
+        :spacing 5 
+        :space-evenly false 
+        :valign "center" 
+        (label 
+          :text "No Music Playing" 
+          :halign "start" 
+          :wrap true 
+          :class "title") 
+        (label 
+          :text "Launch Spotify to begin" 
+          :halign "start" 
+          :wrap true))))) 
 
 (defwidget control_panel [] 
   (box :orientation "vertical" :width 400 :height 300 
-       :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 20px"
-    (label :text "Control Center" :halign "start" :valign "start" :style "font-weight: bold")
-    (box :orientation "horizontal" :valign "start" :spacing 10 
-      (contorl_panel_toggle_button :icon "󰖩" :name "Wireless Connection" :status { is_wifi_enabled== "enabled" ? wifi_ssid : "Enabled"} :is_active true)
-      (contorl_panel_toggle_button :icon "󰂯" :name "Bluetooth" :status "Off" :is_active false))
-    (box :orientation "horizontal" :valign "start" :spacing 10 
-      (contorl_panel_toggle_button :icon "󰁹" :name "Battery Saver" :status "Off" :is_active false)
-      (contorl_panel_toggle_button :icon "󰀞" :name "Aireplane Mode" :status "Off" :is_active false))
-    (label :text "Disks" :halign "start" :valign "start" :style "font-weight: bold" :is_active false)
+    :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 20px" 
+    (label :text "Control Center" :halign "start" :valign "start" :style "font-weight: bold") 
+    (box :orientation "vertical" :spacing 10 
+      (box :orientation "horizontal" :spacing 10 :halign "center" 
+        (control_panel_toggle_button 
+          :onclick "/home/overlord/.local/share/eww/eww open --toggle wifi_selector" 
+          :icon "󰖩" 
+          :name "Wireless Connection" 
+          :status {is_connected == "connected" ? wifi_ssid : "Disabled"} 
+          :is_active {is_wifi_enabled == "enabled"}) 
+        (control_panel_toggle_button 
+          :onclick {is_bluetooth_enabled == "true" ? "bluetoothctl power off" : "bluetoothctl power on"} 
+          :icon "󰂯" 
+          :name "Bluetooth" 
+          :status {is_bluetooth_enabled == "true" ? "On" : "Off"} 
+          :is_active {is_bluetooth_enabled == "true"})) 
+      (box :orientation "horizontal" :spacing 10 :halign "start" 
+        (control_panel_toggle_button 
+          :onclick "makoctl mode -t dnd" 
+          :icon "" 
+          :name "Do Not Disturb" 
+          :status {is_dnd_enabled == "true" ? "On" : "Off"} 
+          :is_active {is_dnd_enabled == "true"}))) 
+    (label :text "Disks" :halign "start" :valign "start" :style "font-weight: bold") 
     (box :orientation "vertical" :valign "start" :spacing 10 
-      (disk :icon "ROOT" :used_perc {EWW_DISK["/"]["used_perc"]} :used {EWW_DISK["/"]["used"]} :total {EWW_DISK["/"]["total"]})
-      (disk :icon "HOME" :used_perc {EWW_DISK["/home"]["used_perc"]} :used {EWW_DISK["/home"]["used"]} :total {EWW_DISK["/home"]["total"]}))))
+      (disk :icon "ROOT" :used_perc {EWW_DISK["/"]["used_perc"]} :used {EWW_DISK["/"]["used"]} :total {EWW_DISK["/"]["total"]}) 
+      (disk :icon "HOME" :used_perc {EWW_DISK["/home"]["used_perc"]} :used {EWW_DISK["/home"]["used"]} :total {EWW_DISK["/home"]["total"]})))) 
 
-
-
-
-(defwidget contorl_panel_toggle_button [icon name status ?is_active] 
-  (eventbox :width 200  :halign "start" :height 50 :style "border: 2px solid #3ddbd9; padding: 10px;"
+;; --- Toggle Button Widget --- 
+(defwidget control_panel_toggle_button [icon name status ?is_active onclick] 
+  (eventbox :width 200 :halign "start" :height 50 
+    :style "border: 2px solid #3ddbd9; padding: 10px;" 
+    :onclick onclick 
     (box :orientation "horizontal" :halign "start" :space-evenly false :spacing 15 :style "padding:10px" 
-      (button :width 40 :height 40  :halign "start"  :style {is_active ? "border: 1px solid  #42ff65;" : "border: 1px solid #ee5396;" } icon)
+      (button :width 40 :height 40 :halign "start" 
+        :style {is_active ? "border: 2px solid #42ff65; background: transparent; color: white;" : "border: 2px solid #ee5396; background: transparent; color: white;"} 
+        icon) 
       (box :orientation "vertical" :space-evenly false :valign "center" 
-        (label :text name :halign "start" :style "font-weight: bold")
-        (label :text status :halign "start")))))
+        (label :text name :halign "start" :style "font-weight: bold") 
+        (label :text status :halign "start"))))) 
 
+;; --- Disk Usage Widget --- 
 (defwidget disk [icon used_perc used total] 
-  (box :width 400 :orientation "horizontal" :halign "start" :height 50 :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 10px"
-    (box :width 40 :height 40 :style "border: 2px solid #3ddbd9" :halign "start"
-            (label :text icon  :halign "center" :justify "center"))
-    (box :orientation "vertical" :space-evenly false :valign "center"
-       (progress :value used_perc :width 300)
-       (label :text "${round(used/1000000000,1)}/${round(total/1000000000,1)} GB" 
-              :halign "end" :style "font-weight: bold"))))
+  (box :width 400 :orientation "horizontal" :halign "start" :height 50 :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 10px" 
+    (box :width 40 :height 40 :style "border: 2px solid #3ddbd9" :halign "start" 
+      (label :text icon :halign "center" :justify "center")) 
+    (box :orientation "vertical" :space-evenly false :valign "center" 
+      (progress :value used_perc :width 300) 
+      (label :text "${round(used/1000000000,1)}/${round(total/1000000000,1)} GB" 
+        :halign "end" :style "font-weight: bold")))) 
 
-(defwidget user [] 
-  (box :orientation "horizontal" 
-    (image :style "border: 2px solid #3ddbd9")
-    (box :orientation "horizontal" 
-      (label :text "Good Evening, icep0ps")
-      (label :text "You are currently listening to music"))))
+;; --- Widget for a single wifi network item in the list ---
+(defwidget wifi_network_item [ssid signal security]
+  (eventbox
+    :onclick `~/.config/eww/scripts/connect.sh "${ssid}" && eww close wifi_selector`
+    :class "wifi-item-box"
+    (box :orientation "horizontal" :space-evenly false :spacing 15 :style "padding: 5px 10px; border: 1px solid #3ddbd9;"
+      (label :text {signal > 75 ? "󰤨" : signal > 50 ? "󰤥" : signal > 25 ? "󰤢" : "󰤟"} :class "wifi-signal-icon")
+      (label :text ssid :halign "start" :hexpand true :limit-width 25 :truncate true)
+      (label :text {security == "OPEN" ? "" : ""} :halign "end" :class "wifi-lock-icon"))))
+
+;; --- The main Wifi Selector Widget ---
+(defwidget wifi_selector []
+  (box :orientation "vertical" :class "wifi-selector-container" :space-evenly false :spacing 15 :style "border: 2px solid #3ddbd9; padding: 20px;"
+    ;; Header
+    (box :orientation "horizontal" :class "wifi-header" :space-evenly false
+      (label :text "Wireless Networks" :halign "start" :hexpand true :style "font-weight: bold;")
+      (box :orientation "horizontal" :halign "end" :spacing 10
+          (button :onclick {is_wifi_enabled == "enabled" ? "nmcli radio wifi off" : "nmcli radio wifi on"}
+                  :class {is_wifi_enabled == "enabled" ? "toggle-on" : "toggle-off"}
+                  {is_wifi_enabled == "enabled" ? "ON" : "OFF"})
+          (button :onclick "eww close wifi_selector" :class "close-button" "CLOSE")))
+    
+    ;; Network List
+    (revealer :transition "slideup" :reveal {is_wifi_enabled == "enabled"} :duration "500ms"
+      (box :orientation "vertical" :spacing 10 :class "wifi-list"
+           (for network in wifi_networks
+                (wifi_network_item
+                    :ssid {network.ssid}
+                    :signal {network.signal}
+                    :security {network.security}))))
+
+    (revealer :transition "slidedown" :reveal {is_wifi_enabled != "enabled"} :duration "500ms"
+        (label :text "Wi-Fi is disabled." :halign "center" :class "wifi-disabled-message"))))
 
 
-
+;; --- Windows ---
 (defwindow music 
-           :monitor 0
-           :geometry (geometry :x "0%"
-                               :y "10px"
-                               :width "400px"
-                               :height "100px"
-                               :anchor "top center")
-           :stacking "fg"
-           :reserve (struts :distance "40px" :side "top")
-           :windowtype "dialog"
-           :wm-ignore false
-  (spotify))
-
+  :monitor 0 
+  :geometry (geometry :x "0%" 
+                      :y "10px" 
+                      :width "400px" 
+                      :height "100px" 
+                      :anchor "top center") 
+  :stacking "fg" 
+  :windowtype "dialog" 
+  :wm-ignore false 
+  (literal :content {is_player_active == "Playing" ? "(spotify)" : "(no-music)"})) 
 
 (defwindow control_center 
-           :monitor 0
-           :geometry (geometry :x "0%"
-                               :y "10px"
-                               :width "430px"
-                               :height "300px"
-                               :anchor "top right")
-           :stacking "fg"
-           :reserve (struts :distance "40px" :side "top")
-           :windowtype "dialog"
-           :wm-ignore false
+  :monitor 0 
+  :geometry (geometry :x "0%" 
+                      :y "10px" 
+                      :width "430px" 
+                      :height "300px" 
+                      :anchor "top right") 
+  :stacking "fg" 
+  :windowtype "dialog" 
+  :wm-ignore false 
   (control_panel))
 
-
-
+;; --- Window for the Wifi Selector ---
+(defwindow wifi_selector
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0%"
+                      :width "350px"
+                      :height "450px"
+                      :anchor "center center")
+  :stacking "fg"
+  :windowtype "dialog"
+  :wm-ignore false
+  (wifi_selector))

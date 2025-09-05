@@ -126,3 +126,26 @@ window#waybar {
 #pulseaudio.muted {
   color: @text_color;
 }
+
+#custom-spotify {
+  margin-right: 8px;
+}
+
+#custom-nordvpn {
+  padding: 0 6px;
+  font-weight: 500;
+  border-radius: 0px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+#custom-nordvpn.disconnected {
+  background: @text_color;
+  color: @active_workspace_text;
+}
+
+#custom-nordvpn.connected {
+  background: @text_color;
+  color: @active_workspace_text;
+}

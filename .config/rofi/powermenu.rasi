@@ -34,12 +34,13 @@ configuration {
 window {
   width:25%;
   background-color: @bg;
+  border: 2;
 }
 
 prompt {
-    enabled: 						true;
+  enabled: 						true;
 	padding: 						10px 15px 10px 15px;
-	background-color: 				@bg2;
+	background-color: 				@bg;
 	text-color: 					#FFFFFF;
 	font:							"JetBrainsMono Nerd Font 8";
 }
@@ -55,13 +56,13 @@ textbox-prompt-colon {
 
 entry {
   padding: 12;
-  background-color: @bg-alt; /* Use the new bg-alt variable */
-  text-color: #f2f4f8; /* Keep original entry text color */
+  background-color: @bg-alt; 
+  text-color: #f2f4f8; 
 }
 
 inputbar {
 	children: 						[ textbox-prompt-colon, prompt ];
-    background-color:               @bg2;
+    background-color:               @bg;
     text-color:                     #FFFFFF;
     expand:                         false;
 	border:							0px;
@@ -73,26 +74,26 @@ inputbar {
 
 mainbox {
   children: [inputbar, listview];
-  background-color: @bg; /* Use the new bg variable */
+  background-color: @bg; 
 }
 
 listview {
-  background-color: @bg; /* Use the new bg variable */
+  background-color: @bg;
   columns: 1;
   lines: 8;
-  border-top: 0; /* Ensure no top border, as in the previous fix */
+  border-top: 0;
 }
 
 
 element {
   padding: 8 12;
-  background-color: transparent; /* Keep transparent as listview has solid background */
+  background-color: transparent;
   text-color: @fg-alt;
 }
 
 element selected {
-  background-color: @bg-selected; /* Use the new bg-selected variable */
-  text-color: #161616; /* Keep original selected text color */
+  background-color: @bg-selected;
+  text-color: #161616;
 }
 
 element-text {
@@ -102,8 +103,8 @@ element-text {
 }
 
 entry {
-  background-color: @bg-alt; /* Use the new bg-alt variable */
-  text-color: #f2f4f8; /* Keep original entry text color */
+  background-color: @bg-alt;
+  text-color: #f2f4f8;
 }
 
 element-icon {
