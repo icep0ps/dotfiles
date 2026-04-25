@@ -126,7 +126,7 @@ bindsym $mod+Shift+0 move container to workspace $ws10
 # Config reload
 bindsym $mod+Shift+c reload
 # Restart sway
-bindsym $mod+Shift+r exec rofi -show rice -modes "rice:$HOME/.config/rofi/scripts/restart-rice-menu.sh"
+bindsym $mod+Shift+r exec ~/.config/rofi/scripts/restart-rice-menu.sh
 # Exit sway session
 bindsym $mod+Shift+e exec "swaynag -t warning -m 'Do you really want to exit Sway?' -b 'Yes' 'swaymsg exit'"
 
