@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Check if tun0 (OpenVPN interface) exists and is up
-if ip a show tun0 up >/dev/null 2>&1; then
-  # Optional: get VPN server IP (remote IP assigned by OpenVPN)
-  server_ip=$(ip addr show tun0 | awk '/inet / {print $2}' | cut -d/ -f1)
+for iface in nordlynx tun0; do
+  if ip link show "$iface" &>/dev/null && ip link show "$iface" | grep -q "UP"; then
+    ip=$(ip -4 addr show "$iface" | awk '/inet / {print $2}' | cut -d/ -f1)
+    printf '{"text":" VPN: [ACTIVE]","class":"connected","tooltip":"Connected via %s — %s"}\n' "$iface" "${ip:-no ip}"
+    exit 0
+  fi
+done
 
-  printf '{"text":" VPN: [ACTIVE]","class":"connected","tooltip":"Connected via OpenVPN (tun0) - %s"}\n' "$server_ip"
-else
-  printf '{"text":" VPN: [OFF]","class":"disconnected","tooltip":"OpenVPN is disconnected"}\n'
-fi
+printf '{"text":" VPN: [OFF]","class":"disconnected","tooltip":"VPN disconnected"}\n'
