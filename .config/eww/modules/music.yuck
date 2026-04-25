@@ -1,0 +1,113 @@
+;; ============================================================
+;;   MUSIC PLAYER — Variables
+;; ============================================================
+
+(deflisten music_title :initial "Unknown song"
+  `playerctl --follow metadata --player=spotify_player --format '{{title}}' || true`)
+
+(deflisten music_artist :initial "Unknown artist"
+  `playerctl --follow metadata --player=spotify_player --format '{{artist}}' || true`)
+
+(deflisten music_album :initial "Unknown album"
+  `playerctl --follow metadata --player=spotify_player --format '{{album}}' || true`)
+
+(deflisten music_position :initial "0:00"
+  `playerctl --follow metadata --player=spotify_player --format '{{duration(position)}}' || true`)
+
+(deflisten music_length :initial "--:--"
+  `playerctl --follow metadata --player=spotify_player --format '{{duration(mpris:length)}}' || true`)
+
+(deflisten music_status :initial "Paused"
+  `playerctl status --follow --player=spotify_player || true`)
+
+(deflisten music_player_active :initial "loading"
+  "playerctl --player=spotify_player status --follow || echo \"false\"")
+
+(deflisten music_art :initial ""
+  "~/.config/eww/scripts/getImage.sh")
+
+(defpoll music_progress :interval "2s" :initial "0"
+  `pos=$(playerctl metadata --player=spotify_player --format "{{ position }}" || echo "0");
+  dur=$(playerctl metadata --player=spotify_player --format "{{ mpris:length }}" || echo "1");
+  awk -v x="$pos" -v y="$dur" 'BEGIN { printf "%0.0f", (y > 0 ? x/y*100 : 0) }'`)
+
+
+;; ============================================================
+;;   MUSIC PLAYER — Widgets
+;; ============================================================
+
+(defwidget music-loading []
+  (box :class "container music-loading"
+       :orientation "horizontal"
+       :halign "start"
+       :width 400
+       :height 100
+       :spacing 10
+       :space-evenly false
+    (box :orientation "vertical" :valign "center" :halign "start" :spacing 5 :space-evenly false
+      (label :text "Loading Library..." :halign "start" :class "title")
+      (label :text "Please wait" :halign "start"))))
+
+(defwidget music-player []
+  (box :class "container music-player"
+       :orientation "horizontal"
+       :halign "start"
+       :spacing 10
+       :space-evenly false
+       :width 400
+    (image :path music_art :class "album-art" :image-height 100 :image-width 100)
+    (box :class "song-info"
+         :orientation "vertical"
+         :width 250
+         :halign "start"
+         :spacing 5
+         :space-evenly false
+         :valign "center"
+      (label :text "${music_title} • ${music_artist}"
+             :halign "start" :truncate true :limit-width 40 :class "title")
+      (label :text music_album :halign "start" :truncate true :limit-width 40)
+      (box :class "music-controls" :orientation "horizontal" :spacing 5
+        (button :class "btn-icon" :onclick "playerctl --player=spotify_player shuffle toggle" "󰒝")
+        (button :class "btn-icon" :onclick "playerctl --player=spotify_player previous" "󰒮")
+        (button :class "btn-icon btn-play"
+                :onclick "playerctl --player=spotify_player play-pause"
+                {music_status == "Playing" ? "󰏤" : "󰐊"})
+        (button :class "btn-icon" :onclick "playerctl --player=spotify_player next" "󰒭")
+        (button :class "btn-icon" :onclick "playerctl --player=spotify_player repeat" "󰑖"))
+      (box :class "progress-bar" :orientation "vertical" :spacing 2
+        (progress :value music_progress)
+        (box :orientation "horizontal"
+          (label :text music_position :halign "start")
+          (label :text music_length :halign "end"))))))
+
+(defwidget music-empty []
+  (box :class "container music-empty"
+       :orientation "vertical"
+       :halign "start"
+       :spacing 10
+       :width 400
+       :height 100
+    (box :orientation "horizontal" :halign "start" :spacing 10 :space-evenly false
+      (box :class "song-info"
+           :orientation "vertical"
+           :width 250
+           :halign "start"
+           :spacing 5
+           :space-evenly false
+           :valign "center"
+        (label :text "No Music Playing" :halign "start" :wrap true :class "title")
+        (label :text "Launch Spotify to begin" :halign "start" :wrap true)))))
+
+(defwidget music-switcher []
+  (stack
+    :selected {
+      music_player_active == "loading" ||
+      ((music_player_active == "Playing" || music_player_active == "Paused") &&
+       music_title == "Unknown song") ? 0 :
+      (music_player_active == "Playing" || music_player_active == "Paused") ? 1 :
+      2}
+    :transition "crossfade"
+    :transition-duration "400ms"
+    (music-loading)  ; 0 — initialising
+    (music-player)   ; 1 — active
+    (music-empty)))  ; 2 — idle

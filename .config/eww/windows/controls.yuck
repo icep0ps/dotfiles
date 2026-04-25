@@ -1,0 +1,12 @@
+(defwindow control_center
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "10px"
+                      :width "430px"
+                      :height "520px"
+                      :anchor "top right")
+  :stacking "fg"
+  :windowtype "dialog"
+  :wm-ignore false
+  (control-center))
+

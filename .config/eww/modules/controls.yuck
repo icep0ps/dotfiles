@@ -1,0 +1,131 @@
+;; ============================================================
+;;   CONTROL CENTER — Variables
+;; ============================================================
+
+;; --- Network ---
+(deflisten net_connected
+  `nmcli general status | awk 'NR==2 {print $1}' || true`)
+
+(deflisten net_wifi_enabled
+  `nmcli general status | awk 'NR==2 {print $4}' || true`)
+
+(deflisten net_ssid
+  `nmcli connection show --active | awk 'NR==2 {print $1}' || true`)
+
+;; --- Bluetooth ---
+(defpoll bt_enabled :interval "5s"
+  `bluetoothctl show | grep -q 'Powered: yes' && echo "true" || echo "false"`)
+
+;; --- Notifications ---
+(defpoll dnd_enabled :interval "2s"
+  `makoctl mode | grep -q 'dnd' && echo "true" || echo "false"`)
+
+;; --- Power ---
+(defpoll power_source :interval "5s"
+  `tlp-stat -s 2>/dev/null | grep -i "power source" | awk '{print $NF}' || echo "unknown"`)
+
+
+;; ============================================================
+;;   CONTROL CENTER — Widgets
+;; ============================================================
+
+(defwidget toggle-button [icon name status is_active onclick]
+  (eventbox :width 196 :height 50
+    :style "border: 2px solid #3ddbd9; padding: 10px;"
+    :onclick onclick
+    (box :orientation "horizontal"
+         :halign "start"
+         :space-evenly false
+         :spacing 10
+         :style "padding: 6px;"
+      (button :width 36 :height 36 :halign "start"
+        :style {is_active
+                  ? "border: 2px solid #42ff65; background: transparent; color: white;"
+                  : "border: 2px solid #ee5396; background: transparent; color: white;"}
+        icon)
+      (box :orientation "vertical" :space-evenly false :valign "center"
+        (label :text name :halign "start" :style "font-weight: bold;")
+        (label :text status :halign "start")))))
+
+(defwidget disk-row [label used_perc free_gb]
+  (box :width 400
+       :orientation "horizontal"
+       :halign "start"
+       :height 50
+       :space-evenly false
+       :spacing 15
+       :style "border: 2px solid #3ddbd9; padding: 10px;"
+    (box :width 40 :height 40
+         :style "border: 2px solid #3ddbd9;"
+         :halign "center" :valign "center"
+      (label :text label :halign "center" :justify "center"))
+    (box :orientation "vertical" :space-evenly false :valign "center"
+      (progress :value used_perc :width 300)
+      (label :text "${round(free_gb, 1)} GB Free"
+             :halign "end" :style "font-weight: bold;"))))
+
+(defwidget power-row []
+  (eventbox :width 400 :height 50
+    :style "border: 2px solid #3ddbd9; padding: 10px;"
+    :onclick {power_source == "AC" ? "sudo tlp bat" : "sudo tlp ac"}
+    (box :orientation "horizontal"
+         :halign "start"
+         :space-evenly false
+         :spacing 15
+         :style "padding: 10px;"
+      (button :width 40 :height 40 :halign "start"
+        :style {power_source == "AC"
+                  ? "border: 2px solid #42ff65; background: transparent; color: white;"
+                  : "border: 2px solid #ee5396; background: transparent; color: white;"}
+        {power_source == "AC" ? "󰂄" : "󰁿"})
+      (box :orientation "vertical" :space-evenly false :valign "center"
+        (label :text "Power Profile" :halign "start" :style "font-weight: bold;")
+        (label :text {power_source == "AC" ? "Performance (AC)" : "Battery Saver"}
+               :halign "start")))))
+
+(defwidget control-center []
+  (box :orientation "vertical"
+       :width 400
+       :space-evenly false
+       :spacing 15
+       :style "border: 2px solid #3ddbd9; padding: 20px;"
+
+    ;; --- Quick Toggles (2-column grid) ---
+    (label :text "Quick Toggles" :halign "start" :style "font-weight: bold;")
+    (box :orientation "vertical" :spacing 8
+      (box :orientation "horizontal" :spacing 8 :halign "start"
+        (toggle-button
+          :onclick "~/.config/eww/scripts/wifi_rofi.sh"
+          :icon "󰖩"
+          :name "Wi-Fi"
+          :status {net_connected == "connected" ? net_ssid : "Disabled"}
+          :is_active {net_wifi_enabled == "enabled"})
+        (toggle-button
+          :onclick {bt_enabled == "true" ? "bluetoothctl power off" : "bluetoothctl power on"}
+          :icon "󰂯"
+          :name "Bluetooth"
+          :status {bt_enabled == "true" ? "On" : "Off"}
+          :is_active {bt_enabled == "true"}))
+      (box :orientation "horizontal" :spacing 8 :halign "start"
+        (toggle-button
+          :onclick "makoctl mode -t dnd"
+          :icon ""
+          :name "Do Not Disturb"
+          :status {dnd_enabled == "true" ? "On" : "Off"}
+          :is_active {dnd_enabled == "true"})))
+
+    ;; --- Power ---
+    (label :text "Power" :halign "start" :style "font-weight: bold;")
+    (power-row)
+
+    ;; --- Storage ---
+    (label :text "Storage" :halign "start" :style "font-weight: bold;")
+    (box :orientation "vertical" :valign "start" :spacing 8
+      (disk-row
+        :label "ROOT"
+        :used_perc {EWW_DISK["/"]["used_perc"]}
+        :free_gb {(EWW_DISK["/"]["total"] - EWW_DISK["/"]["used"]) / 1000000000})
+      (disk-row
+        :label "HOME"
+        :used_perc {EWW_DISK["/home"]["used_perc"]}
+        :free_gb {(EWW_DISK["/home"]["total"] - EWW_DISK["/home"]["used"]) / 1000000000}))))

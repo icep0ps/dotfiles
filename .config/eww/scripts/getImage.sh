@@ -1,22 +1,32 @@
 #!/usr/bin/env bash
 
-playerctl metadata --format --player=spotify_player "{{mpris:artUrl}}" --follow | while IFS= read -r line; do
-  if [[ $line == *"http"* ]]; then
-    cache_dir="$XDG_RUNTIME_DIR/album_art_cache"
-    mkdir -p "$cache_dir"
-    file_name=$(basename "$line")
-    file_path="$cache_dir/$file_name"
+CACHE_DIR="$HOME/.cache/eww_album_art"
+mkdir -p "$CACHE_DIR"
 
-    # Check if file exists
-    if [ -e "$file_path" ]; then
-      # File exists, return path immediately
-      echo "file://$file_path"
+last_path=""
+
+playerctl --follow metadata --player=spotify_player --format '{{mpris:artUrl}}' | while IFS= read -r url; do
+  if [[ "$url" == http* ]]; then
+    hash=$(echo -n "$url" | md5sum | cut -d' ' -f1)
+    ext="${url##*.}"
+    [[ "$ext" =~ ^(jpg|jpeg|png|webp)$ ]] || ext="jpg"
+    file_path="$CACHE_DIR/${hash}.${ext}"
+
+    if [[ -f "$file_path" ]]; then
+      echo "$file_path"
+      last_path="$file_path"
     else
-      curl --output "$file_path" "$line" >/dev/null 2>&1
-      echo "file://$file_path"
+      # Show old image immediately so widget doesn't go blank while downloading
+      [[ -n "$last_path" ]] && echo "$last_path"
+      if curl -sL --max-time 15 "$url" -o "$file_path" 2>/dev/null; then
+        echo "$file_path"
+        last_path="$file_path"
+      else
+        rm -f "$file_path"
+      fi
     fi
-  else
-    # artUrl doesn't have a link, nothing to do
-    echo "$line"
+  elif [[ -n "$url" && -f "$url" ]]; then
+    echo "$url"
+    last_path="$url"
   fi
 done

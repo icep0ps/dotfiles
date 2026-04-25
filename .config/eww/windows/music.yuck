@@ -1,0 +1,11 @@
+(defwindow music
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "10px"
+                      :width "400px"
+                      :height "100px"
+                      :anchor "top center")
+  :stacking "fg"
+  :windowtype "dialog"
+  :wm-ignore false
+  (music-switcher))

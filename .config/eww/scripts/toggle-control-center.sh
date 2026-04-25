@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-is_control_center_open=$(${HOME}/.local/share/eww/eww active-windows | grep -q "control_center" && echo true)
+EWW="${HOME}/.local/share/eww/eww"
 
-if [ $is_control_center_open ]; then
-  ${HOME}/.local/share/eww/eww close control_center
+if "$EWW" active-windows | grep -q "control_center"; then
+  "$EWW" close control_center
 else
-  ${HOME}/.local/share/eww/eww open control_center
+  "$EWW" open control_center
 fi
-
-exit 0
