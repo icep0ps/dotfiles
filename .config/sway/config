@@ -155,6 +155,13 @@ exec_always swaybg -i $HOME/Pictures/wallpaper.jpg --mode fill
 gaps inner 0
 gaps outer 0
 
+
+
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+}
+
 # Window borders and colors
 client.focused          #FFFFFF #00000000 #00000000 #FFFFFF #FFFFFF
 client.focused_inactive #252525 #00000000 #00000000 #2E3440 #252525
@@ -168,7 +175,7 @@ for_window [class=".*"] border pixel 2
 
 
 # Screenshot using grim (Wayland)
-bindsym Print exec grim -g "$(slurp)" ~/Pictures/screenshots/screenshot_$(date +%F_%T).png
+bindsym Print exec ~/.config/sway/screenshot.sh
 
 # See Systemd and dbus activation environments:(https://github.com/swaywm/sway/wiki#systemd-and-dbus-activation-environments)
 exec systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK I3SOCK XCURSOR_SIZE XCURSOR_THEME
@@ -180,3 +187,7 @@ exec_always autotiling -w 1 3 5 7 9
 # Launch waybar
 exec waybar
 exec /usr/bin/lxpolkit
+
+
+# Battery chargering status notifications
+exec --no-startup-id ~/.config/mako/power_monitor.sh
