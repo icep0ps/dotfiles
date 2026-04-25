@@ -1,44 +1,43 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-declare -A ACTIONS
-ACTIONS["Restart Sway"]="swaymsg reload"
-ACTIONS["Restart Waybar"]="killall waybar && coproc (waybar &)"
-ACTIONS["Reload Sway Config"]="swaymsg reload"
-ACTIONS["Reload Waybar Config"]="killall -SIGUSR2 waybar"
+EWW="${HOME}/.local/share/eww/eww"
 
-declare -A NOTIFICATIONS
-NOTIFICATIONS["Restart Sway"]="Sway has been reloaded!"
-NOTIFICATIONS["Restart Waybar"]="Waybar has been restarted!"
-NOTIFICATIONS["Reload Sway Config"]="Sway configuration reloaded!"
-NOTIFICATIONS["Reload Waybar Config"]="Waybar configuration reloaded!"
+# Ordered entries: "Label:Icon"
+MENU=(
+  "Reload Sway Config:󰑓"
+  "Restart Waybar:"
+  "Reload Waybar Theme:"
+  "Restart Eww:"
+)
 
-declare -A ICONS
-ICONS["Restart Sway"]=""
-ICONS["Restart Waybar"]=""
-ICONS["Reload Sway Config"]=""
-ICONS["Reload Waybar Config"]=""
+run() {
+  case "$1" in
+    "Reload Sway Config")
+      swaymsg reload
+      ;;
+    "Restart Waybar")
+      killall waybar
+      setsid waybar &>/dev/null &
+      ;;
+    "Reload Waybar Theme")
+      killall -SIGUSR2 waybar
+      ;;
+    "Restart Eww")
+      "$EWW" kill
+      setsid "$EWW" daemon &>/dev/null &
+      ;;
+  esac
+}
 
-echo -en "\0prompt\x1fConfiguration Restart\n"
-
-for action in "${!ACTIONS[@]}"; do
-  glyph="${ICONS[$action]}"
-  label="$glyph  $action"
-  echo -en "$action\0display\x1f$label\n"
-done
-
-if [[ -n "$@" ]]; then
-  selected="$@"
-
-  command="${ACTIONS["$selected"]}"
-  message="${NOTIFICATIONS["$selected"]}"
-
-  if [[ -n "$command" ]]; then
-    eval "$command"
-    [[ -n "$message" ]] && notify-send "System Action" "$message"
-    exit 0
-  else
-    notify-send "Rofi Action Error" "Unknown action: '$selected'"
-  fi
+if [[ -z "$*" ]]; then
+  printf '\0prompt\x1fRice\n'
+  for entry in "${MENU[@]}"; do
+    label="${entry%%:*}"
+    icon="${entry##*:}"
+    printf '%s\0display\x1f%s  %s\n' "$label" "$icon" "$label"
+  done
+  exit 0
 fi
 
-exit 0
+selected="$*"
+run "$selected" && notify-send "Rice" "$selected"
