@@ -34,6 +34,7 @@ window#waybar {
 
 #workspaces,
 #pulseaudio,
+#custom-mic,
 #battery,
 #network,
 #memory,
@@ -76,6 +77,21 @@ window#waybar {
   background: @background_color;
   color: @hidden_workspace_text;
   border-radius: 0;
+}
+
+#custom-mic {
+  padding: 0 8px;
+  border: none;
+  color: @active_workspace_text;
+}
+
+#custom-mic.active,
+#custom-mic.idle {
+  background: @active_workspace_bg;
+}
+
+#custom-mic.muted {
+  background: @urgent_workspace_bg;
 }
 
 #pulseaudio {
