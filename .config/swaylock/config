@@ -1,0 +1,46 @@
+# Screen fill
+color=0a0a0a
+
+# Font — matches eww and waybar
+font=JetBrainsMono Nerd Font
+font-size=14
+
+# Indicator geometry — thin ring to match 2px border aesthetic
+indicator-radius=70
+indicator-thickness=6
+line-uses-ring
+
+# Behavior
+ignore-empty-password
+show-failed-attempts
+daemonize
+
+# --- Default (idle / typing) ---
+inside-color=0a0a0aff
+ring-color=3ddbd9ff
+text-color=ffffffff
+key-hl-color=3ddbd9ff
+bs-hl-color=ff6188ff
+separator-color=00000000
+
+# --- Verifying ---
+inside-ver-color=0a0a0aff
+ring-ver-color=42ff65ff
+text-ver-color=42ff65ff
+
+# --- Wrong password ---
+inside-wrong-color=0a0a0aff
+ring-wrong-color=ff6188ff
+text-wrong-color=ff6188ff
+
+# --- Cleared (backspaced to empty) ---
+inside-clear-color=0a0a0aff
+ring-clear-color=353535ff
+text-clear-color=6a6a6aff
+
+# --- Caps Lock ---
+inside-caps-lock-color=0a0a0aff
+ring-caps-lock-color=3ddbd9ff
+text-caps-lock-color=3ddbd9ff
+caps-lock-key-hl-color=3ddbd9ff
+caps-lock-bs-hl-color=ff6188ff

@@ -177,6 +177,9 @@ for_window [class=".*"] border pixel 2
 # Screenshot using grim (Wayland)
 bindsym Print exec ~/.config/sway/screenshot.sh
 
+# Lock screen
+bindsym $mod+shift+l exec swaylock
+
 # See Systemd and dbus activation environments:(https://github.com/swaywm/sway/wiki#systemd-and-dbus-activation-environments)
 exec systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK I3SOCK XCURSOR_SIZE XCURSOR_THEME
 
