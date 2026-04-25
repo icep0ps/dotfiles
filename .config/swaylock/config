@@ -1,4 +1,6 @@
-# Screen fill
+# Background — wallpaper with solid color fallback
+image=~/Pictures/wallpaper.jpg
+scaling=fill
 color=0a0a0a
 
 # Font — matches eww and waybar
