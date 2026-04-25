@@ -3,11 +3,12 @@
 EWW="${HOME}/.local/share/eww/eww"
 
 # Ordered entries: "Label:Icon"
+# Icons: nf-md-refresh, nf-md-view-dashboard, nf-md-palette, nf-md-widgets
 MENU=(
-  "Reload Sway Config:󰑓"
-  "Restart Waybar:"
-  "Reload Waybar Theme:"
-  "Restart Eww:"
+  "Reload Sway Config:\U000F0453"
+  "Restart Waybar:\U000F0570"
+  "Reload Waybar Theme:\U000F03D8"
+  "Restart Eww:\U000F0403"
 )
 
 run() {
@@ -33,7 +34,7 @@ if [[ -z "$*" ]]; then
   printf '\0prompt\x1fRice\n'
   for entry in "${MENU[@]}"; do
     label="${entry%%:*}"
-    icon="${entry##*:}"
+    icon=$(printf "${entry##*:}")
     printf '%s\0display\x1f%s  %s\n' "$label" "$icon" "$label"
   done
   exit 0
