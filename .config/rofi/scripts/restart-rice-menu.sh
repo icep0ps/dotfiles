@@ -10,8 +10,8 @@ restart_eww="$(printf '\U000F0403')  Restart Eww"
 
 options="$reload_sway\n$restart_waybar\n$reload_waybar\n$restart_eww"
 
-chosen=$(echo -e "$options" | rofi -no-config -theme "$DIR/powermenu.rasi" \
-  -dmenu -p "$(printf '\U000F0493')  Reload Components" -selected-row 0)
+chosen=$(echo -e "$options" | rofi -dmenu \
+  -p "$(printf '\U000F0493')  Reload Components" -selected-row 0)
 
 case "$chosen" in
   "$reload_sway")
