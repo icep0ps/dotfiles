@@ -14,11 +14,9 @@
     "clock",
     "custom/power",
   ],
-
   "sway/workspaces": {
     "format": "[{index}]",
   },
-
   "pulseaudio": {
     "format": "{icon}  {volume}%",
     "format-muted": " Muted",
@@ -27,7 +25,6 @@
     },
     "scroll-step": 5,
   },
-
   "battery": {
     "format": "{icon} {capacity}%",
     "format-charging": " {capacity}%",
@@ -36,32 +33,28 @@
     "format-full": "  100%",
     "interval": 30,
   },
-
   "network": {
     "format-wifi": "  {essid} ({signalStrength}%)",
     "format-ethernet": "󰈀  Wired",
     "format-disconnected": "󰤮  Disconnected",
     "interval": 10,
   },
-
   "memory": {
     "format": "  {used} MiB",
     "interval": 3,
   },
-
   "clock": {
     "format": "  {:%a %d %b, %I:%M %p}",
     "interval": 60,
     "tooltip": false,
   },
-
   "custom/power": {
     "format": "⏻",
-    "on-click": "${HOME}/.config/polybar/scripts/powermenu.sh",
+    "on-click": "${HOME}/.config/.archive/polybar-20260531/scripts/powermenu.sh",
     "tooltip": false,
   },
   "custom/spotify": {
-    "exec": "${HOME}/.config/polybar/scripts/spotify-playerctl.sh",
+    "exec": "${HOME}/.config/waybar/scripts/spotify-playerctl.sh",
     "on-click": "${HOME}/.config/waybar/scripts/open_spotify_widget.sh",
     "max-length": 50,
     "exec-on-event": true,
@@ -76,10 +69,11 @@
     "exec-on-event": true,
     "tooltip": true,
   },
-
   "custom/nordvpn": {
     "exec": "${HOME}/.config/waybar/scripts/nordvpn-status.sh",
     "interval": 10,
+    "on-click": "foot -e startvpn",
+    "on-click-right": "${HOME}/.config/waybar/scripts/vpn-control.sh",
     "format": "{text}",
     "tooltip": true,
     "return-type": "json",

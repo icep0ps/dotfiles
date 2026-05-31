@@ -176,6 +176,7 @@ for_window [class=".*"] border pixel 2
 
 # Screenshot using grim (Wayland)
 bindsym Print exec ~/.config/sway/screenshot.sh
+bindsym $mod+Print exec grimshot copy active
 
 # Lock screen
 bindsym $mod+ctrl+l exec swaylock
@@ -194,3 +195,11 @@ exec /usr/bin/lxpolkit
 
 # Battery chargering status notifications
 exec --no-startup-id ~/.config/mako/power_monitor.sh
+
+# udiskie for automounting of external drives
+exec udiskie --automount --notify --smart-tray
+
+# Sway automate locking after a period of inactivity
+exec swayidle -w \
+     timeout 300 'swaylock -f --grace 10 --fade-in 8'
+

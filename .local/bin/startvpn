@@ -1,0 +1,119 @@
+#!/bin/bash
+# Start OpenVPN connection with NordVPN on Arch
+
+CONFIG_DIR="$HOME/.config/openvpn"
+CRED_FILE="$HOME/.vpn_credentials"
+LAST_SERVER_FILE="$HOME/.config/vpn-last-server"
+
+notify() {
+  local urgency="$1" msg="$2"
+  notify-send -u "$urgency" -i "network-vpn" "VPN" "$msg" 2>/dev/null || true
+  echo "[$(date '+%H:%M:%S')] $msg"
+}
+
+captive_portal_url() {
+  local effective
+  effective=$(curl -sL --max-time 5 -o /dev/null -w "%{url_effective}" \
+    "http://captive.apple.com/hotspot-detect.html" 2>/dev/null)
+  if [[ "$effective" != "http://captive.apple.com/hotspot-detect.html" ]]; then
+    echo "$effective"
+  fi
+}
+
+handle_captive_portal() {
+  local portal_url
+  portal_url=$(captive_portal_url)
+  if [[ -n "$portal_url" ]]; then
+    notify critical "Captive portal detected — opening browser to log in"
+    xdg-open "$portal_url" 2>/dev/null || xdg-open "http://192.168.1.1" 2>/dev/null || true
+    read -rp "Press Enter after completing captive portal login, or Ctrl+C to abort..."
+    return 0
+  fi
+  return 1
+}
+
+[[ ! -d "$CONFIG_DIR" ]] && { echo "Config dir not found: $CONFIG_DIR"; exit 1; }
+[[ ! -f "$CRED_FILE" ]]  && {
+  echo "Credentials not found: $CRED_FILE"
+  echo "Create it with two lines: username on line 1, password on line 2"
+  echo "See ~/.config/openvpn/.vpn_credentials.example for reference"
+  exit 1
+}
+
+# If a config was passed as argument, use it directly
+if [[ -n "$1" && -f "$1" ]]; then
+  conf="$1"
+else
+  # Build list: prefer UDP configs, annotate last-used
+  mapfile -t configs < <(ls "$CONFIG_DIR"/*.ovpn 2>/dev/null)
+  if [[ ${#configs[@]} -eq 0 ]]; then
+    echo "No .ovpn configs found in $CONFIG_DIR"
+    exit 1
+  fi
+
+  last_used=""
+  [[ -f "$LAST_SERVER_FILE" ]] && last_used=$(cat "$LAST_SERVER_FILE")
+
+  echo "Available VPN servers:"
+  declare -a display_names
+  for i in "${!configs[@]}"; do
+    name=$(basename "${configs[$i]}" .ovpn)
+    label="$name"
+    [[ "${configs[$i]}" == "$last_used" ]] && label="$name  (last used)"
+    display_names[$i]="$label"
+    echo "  $((i+1))) $label"
+  done
+  echo ""
+
+  while true; do
+    read -rp "Select server [1-${#configs[@]}]: " choice
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#configs[@]} )); then
+      conf="${configs[$((choice-1))]}"
+      break
+    fi
+    echo "Invalid choice, try again."
+  done
+fi
+
+# Persist last-used server
+echo "$conf" > "$LAST_SERVER_FILE"
+
+while true; do
+  handle_captive_portal
+
+  notify normal "Connecting to $(basename "$conf" .ovpn)..."
+
+  sudo openvpn --config "$conf" --auth-user-pass "$CRED_FILE" 2>&1 | \
+  while IFS= read -r line; do
+    echo "$line"
+    case "$line" in
+      *"Initialization Sequence Completed"*)
+        notify normal "Connected to $(basename "$conf" .ovpn)" ;;
+      *"AUTH_FAILED"*)
+        notify critical "Authentication failed — check $CRED_FILE" ;;
+      *"TLS Error"*)
+        notify critical "TLS error — check network or captive portal" ;;
+      *"Connection reset"* | *"network unreachable"*)
+        notify normal "Network interruption detected..." ;;
+    esac
+  done
+  vpn_exit=${PIPESTATUS[0]}
+
+  case $vpn_exit in
+    0)
+      notify normal "Disconnected cleanly"
+      break
+      ;;
+    *)
+      notify critical "VPN dropped (exit $vpn_exit)"
+      if handle_captive_portal; then
+        notify normal "Reconnecting after captive portal login..."
+        continue
+      fi
+      read -rp "Reconnect? [Y/n] " ans
+      [[ "${ans,,}" == "n" ]] && break
+      ;;
+  esac
+done
+
+notify normal "VPN session ended"

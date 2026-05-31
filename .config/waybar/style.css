@@ -1,6 +1,5 @@
 @define-color background_color #0f0f0f;
 @define-color primary_background #0a0a0a;
-
 @define-color module_bg_1 #0d0d0d;
 @define-color module_bg_2 #151515;
 @define-color module_bg_3 #1d1d1d;
@@ -8,7 +7,6 @@
 @define-color module_bg_5 #2d2d2d;
 @define-color module_bg_6 #353535;
 @define-color module_bg_7 #3d3d3d;
-
 @define-color text_color #ffffff;
 @define-color active_workspace_bg #3ddbd9;
 @define-color active_workspace_text #000000;
@@ -19,7 +17,7 @@
 
 * {
   font-family:
-    "JetBrainsMono Nerd Font", "Iosevka Nerd Font", monospace, sans-serif;
+    "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace, sans-serif;
   font-size: 10px;
   padding: 0;
   margin: 0;
@@ -38,9 +36,11 @@ window#waybar {
 #battery,
 #network,
 #memory,
+#tray,
 #clock,
 #custom-power,
-#custom-spotify {
+#custom-spotify,
+#custom-nordvpn {
   padding-left: 4px;
   padding-right: 4px;
   margin: 0;
@@ -51,6 +51,7 @@ window#waybar {
   padding-left: 6px;
   padding-right: 6px;
   background: @text_color;
+  margin-right: 8px;
 }
 
 #workspaces button {
@@ -122,6 +123,25 @@ window#waybar {
   border: none;
 }
 
+#tray {
+  background: @module_bg_2;
+  padding: 0 8px;
+  border: none;
+}
+
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+}
+
+#tray menu {
+  background: @primary_background;
+  color: @text_color;
+}
+
 #clock {
   background: @module_bg_2;
   color: @text_color;
@@ -141,10 +161,6 @@ window#waybar {
 #battery.charging,
 #pulseaudio.muted {
   color: @text_color;
-}
-
-#custom-spotify {
-  margin-right: 8px;
 }
 
 #custom-nordvpn {

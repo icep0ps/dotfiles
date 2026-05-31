@@ -125,3 +125,5 @@ export PATH=/home/overlord/.opencode/bin:$PATH
 
 # Turso
 export PATH="$PATH:/home/overlord/.turso"
+export VISUAL=nvim
+export EDITOR=nvim

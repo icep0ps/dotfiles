@@ -2,34 +2,14 @@
 ;;   MUSIC PLAYER — Variables
 ;; ============================================================
 
-(deflisten music_title :initial "Unknown song"
-  `playerctl --follow metadata --player=spotify_player --format '{{title}}' || true`)
-
-(deflisten music_artist :initial "Unknown artist"
-  `playerctl --follow metadata --player=spotify_player --format '{{artist}}' || true`)
-
-(deflisten music_album :initial "Unknown album"
-  `playerctl --follow metadata --player=spotify_player --format '{{album}}' || true`)
-
-(deflisten music_position :initial "0:00"
-  `playerctl --follow metadata --player=spotify_player --format '{{duration(position)}}' || true`)
-
-(deflisten music_length :initial "--:--"
-  `playerctl --follow metadata --player=spotify_player --format '{{duration(mpris:length)}}' || true`)
-
-(deflisten music_status :initial "Paused"
-  `playerctl status --follow --player=spotify_player || true`)
-
-(deflisten music_player_active :initial "loading"
-  "playerctl --player=spotify_player status --follow || echo \"false\"")
+(deflisten music_data :initial '{"status":"Stopped","title":"Loading...","artist":"","album":"","position":"0:00","length":"0:00","device":"","art_url":"","source":"none"}'
+  "~/.config/eww/scripts/spotify_unified.sh")
 
 (deflisten music_art :initial ""
   "~/.config/eww/scripts/getImage.sh")
 
-(defpoll music_progress :interval "2s" :initial "0"
-  `pos=$(playerctl metadata --player=spotify_player --format "{{ position }}" || echo "0");
-  dur=$(playerctl metadata --player=spotify_player --format "{{ mpris:length }}" || echo "1");
-  awk -v x="$pos" -v y="$dur" 'BEGIN { printf "%0.0f", (y > 0 ? x/y*100 : 0) }'`)
+(defpoll music_progress :interval "1s" :initial "0"
+  "~/.config/eww/scripts/get_music_progress.sh")
 
 
 ;; ============================================================
@@ -39,11 +19,13 @@
 (defwidget music-loading []
   (box :class "container music-loading"
        :orientation "horizontal"
-       :halign "start"
+       :halign "center"
+       :valign "center"
        :width 400
-       :height 100
-       :spacing 10
+       :height 120
+       :spacing 15
        :space-evenly false
+    (label :text "󰝚" :class "loading-icon")
     (box :orientation "vertical" :valign "center" :halign "start" :spacing 5 :space-evenly false
       (label :text "Loading Library..." :halign "start" :class "title")
       (label :text "Please wait" :halign "start"))))
@@ -55,7 +37,8 @@
        :spacing 10
        :space-evenly false
        :width 400
-    (image :path music_art :class "album-art" :image-height 100 :image-width 100)
+       :height 120
+    (image :path music_art :class "album-art" :image-height 120 :image-width 120)
     (box :class "song-info"
          :orientation "vertical"
          :width 250
@@ -63,48 +46,53 @@
          :spacing 5
          :space-evenly false
          :valign "center"
-      (label :text "${music_title} • ${music_artist}"
+      (label :text "${music_data.title} • ${music_data.artist}"
              :halign "start" :truncate true :limit-width 40 :class "title")
-      (label :text music_album :halign "start" :truncate true :limit-width 40)
+      (label :text {music_data.album} :halign "start" :truncate true :limit-width 40)
+      (label :text "󰓃 ${music_data.device}" :halign "start" :truncate true :limit-width 40 :class "device-label")
       (box :class "music-controls" :orientation "horizontal" :spacing 5
         (button :class "btn-icon" :onclick "playerctl --player=spotify_player shuffle toggle" "󰒝")
         (button :class "btn-icon" :onclick "playerctl --player=spotify_player previous" "󰒮")
         (button :class "btn-icon btn-play"
                 :onclick "playerctl --player=spotify_player play-pause"
-                {music_status == "Playing" ? "󰏤" : "󰐊"})
+                {music_data.status == "Playing" ? "󰏤" : "󰐊"})
         (button :class "btn-icon" :onclick "playerctl --player=spotify_player next" "󰒭")
         (button :class "btn-icon" :onclick "playerctl --player=spotify_player repeat" "󰑖"))
       (box :class "progress-bar" :orientation "vertical" :spacing 2
         (progress :value music_progress)
         (box :orientation "horizontal"
-          (label :text music_position :halign "start")
-          (label :text music_length :halign "end"))))))
+          (label :text {music_data.position} :halign "start")
+          (label :text {music_data.length} :halign "end"))))))
 
 (defwidget music-empty []
   (box :class "container music-empty"
-       :orientation "vertical"
+       :orientation "horizontal"
        :halign "start"
        :spacing 10
        :width 400
-       :height 100
-    (box :orientation "horizontal" :halign "start" :spacing 10 :space-evenly false
-      (box :class "song-info"
-           :orientation "vertical"
-           :width 250
-           :halign "start"
-           :spacing 5
-           :space-evenly false
-           :valign "center"
-        (label :text "No Music Playing" :halign "start" :wrap true :class "title")
-        (label :text "Launch Spotify to begin" :halign "start" :wrap true)))))
+       :height 120
+       :space-evenly false
+    (box :class "album-art album-art-empty" 
+         :width 120 
+         :height 120
+         :halign "center"
+         :valign "center"
+      (label :text "󰝚" :class "empty-icon"))
+    (box :class "song-info"
+         :orientation "vertical"
+         :width 250
+         :halign "start"
+         :spacing 5
+         :space-evenly false
+         :valign "center"
+      (label :text "No Music Playing" :halign "start" :class "title")
+      (label :text "Play something on Spotify" :halign "start"))))
 
 (defwidget music-switcher []
   (stack
     :selected {
-      music_player_active == "loading" ||
-      ((music_player_active == "Playing" || music_player_active == "Paused") &&
-       music_title == "Unknown song") ? 0 :
-      (music_player_active == "Playing" || music_player_active == "Paused") ? 1 :
+      music_data.status == "Stopped" && music_data.title == "Loading..." ? 0 :
+      (music_data.status == "Playing" || music_data.status == "Paused") ? 1 :
       2}
     :transition "crossfade"
     :transition-duration "400ms"
