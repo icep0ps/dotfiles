@@ -5,15 +5,17 @@ export PATH="/usr/bin:/usr/local/bin:/sbin:/bin:$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config/openvpn"
 CRED_FILE="$HOME/.vpn_credentials"
 LAST_SERVER_FILE="$HOME/.config/vpn-last-server"
-ROFI_ARGS=(-theme-str 'window {width: 550px;} listview { columns: 4; }' -i -dmenu -p "VPN")
-ROFI_SMALL=(-theme-str 'window {width: 250px;}' -i -dmenu -p "VPN")
+ROFI_PICKER=(-theme-str 'window {width: 550px;} listview { columns: 4; }' -i -dmenu -p "VPN")
+ROFI_MENU=(-theme-str 'window {width: 300px;}' -i -dmenu -p "VPN")
 
 notify_vpn() {
   notify-send -u "$1" -i "network-vpn" "VPN" "$2" 2>/dev/null || true
 }
 
-# Format ovpn filename into a clean label
-# za128.nordvpn.com.tcp → ZA #128  TCP
+refresh_waybar() {
+  pkill -RTMIN+1 waybar 2>/dev/null || true
+}
+
 format_name() {
   local raw="$1"
   if [[ "$raw" =~ ^([a-z]{2})([0-9]+)\.nordvpn\.com\.(tcp|udp)$ ]]; then
@@ -23,6 +25,30 @@ format_name() {
   fi
 }
 
+# If VPN is already active, show manage menu instead of server picker
+for iface in nordlynx tun0; do
+  if ip link show "$iface" &>/dev/null && ip link show "$iface" | grep -q "UP"; then
+    choice=$(printf "󰌿 Disconnect\n󰑓 Switch Server" | rofi "${ROFI_MENU[@]}")
+    case "$choice" in
+      *Disconnect*)
+        sudo pkill openvpn
+        notify_vpn normal "Disconnected"
+        refresh_waybar
+        exit 0
+        ;;
+      *Switch*)
+        sudo pkill openvpn
+        sleep 1
+        ;;
+      *)
+        exit 0
+        ;;
+    esac
+    break
+  fi
+done
+
+# Prerequisites
 if [[ ! -d "$CONFIG_DIR" ]]; then
   notify_vpn critical "Config dir not found: $CONFIG_DIR"
   exit 1
@@ -32,7 +58,7 @@ if [[ ! -f "$CRED_FILE" ]]; then
   exit 1
 fi
 
-# Server selection via rofi (or direct config path as argument)
+# Server picker
 if [[ -n "$1" && -f "$1" ]]; then
   conf="$1"
 else
@@ -55,7 +81,7 @@ else
     label_to_path["${label%  ★}"]="$path"
   done
 
-  choice=$(printf '%s\n' "${items[@]}" | rofi "${ROFI_ARGS[@]}")
+  choice=$(printf '%s\n' "${items[@]}" | rofi "${ROFI_PICKER[@]}")
   [[ -z "$choice" ]] && exit 0
 
   conf="${label_to_path[${choice%  ★}]}"
@@ -75,14 +101,13 @@ captive_portal_check() {
   [[ "$effective" != "http://captive.apple.com/hotspot-detect.html" ]] && echo "$effective"
 }
 
-# Connection loop runs detached so this script exits immediately
 (
   while true; do
     portal=$(captive_portal_check)
     if [[ -n "$portal" ]]; then
       notify_vpn critical "Captive portal detected — opening browser"
       xdg-open "$portal" 2>/dev/null || xdg-open "http://192.168.1.1" 2>/dev/null || true
-      response=$(printf "✓ Continue\n✗ Abort" | rofi "${ROFI_SMALL[@]}" -p "Complete login then select Continue")
+      response=$(printf "✓ Continue\n✗ Abort" | rofi "${ROFI_MENU[@]}" -p "Complete login then select Continue")
       [[ "$response" == *"Continue"* ]] || { notify_vpn normal "VPN cancelled"; exit 0; }
     fi
 
@@ -92,7 +117,8 @@ captive_portal_check() {
     while IFS= read -r line; do
       case "$line" in
         *"Initialization Sequence Completed"*)
-          notify_vpn normal "Connected to $server" ;;
+          notify_vpn normal "Connected to $server"
+          refresh_waybar ;;
         *"AUTH_FAILED"*)
           notify_vpn critical "Authentication failed — check $CRED_FILE" ;;
         *"TLS Error"*)
@@ -103,6 +129,8 @@ captive_portal_check() {
     done
     vpn_exit=${PIPESTATUS[0]}
 
+    refresh_waybar
+
     [[ $vpn_exit -eq 0 ]] && { notify_vpn normal "Disconnected cleanly"; exit 0; }
 
     notify_vpn critical "VPN dropped (exit $vpn_exit)"
@@ -110,12 +138,12 @@ captive_portal_check() {
     portal=$(captive_portal_check)
     if [[ -n "$portal" ]]; then
       xdg-open "$portal" 2>/dev/null || true
-      response=$(printf "✓ Reconnect\n✗ Abort" | rofi "${ROFI_SMALL[@]}" -p "Captive portal — log in then select Reconnect")
+      response=$(printf "✓ Reconnect\n✗ Abort" | rofi "${ROFI_MENU[@]}" -p "Captive portal — log in then select Reconnect")
       [[ "$response" == *"Reconnect"* ]] || { notify_vpn normal "VPN session ended"; exit 0; }
       continue
     fi
 
-    response=$(printf "󰑓 Reconnect\n󰌿 Disconnect" | rofi "${ROFI_SMALL[@]}" -p "VPN dropped — $server")
+    response=$(printf "󰑓 Reconnect\n󰌿 Disconnect" | rofi "${ROFI_MENU[@]}" -p "VPN dropped — $server")
     [[ "$response" == *"Reconnect"* ]] || { notify_vpn normal "VPN session ended"; exit 0; }
   done
 ) &

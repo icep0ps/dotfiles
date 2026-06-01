@@ -72,8 +72,8 @@
   "custom/nordvpn": {
     "exec": "${HOME}/.config/waybar/scripts/nordvpn-status.sh",
     "interval": 10,
+    "signal": 1,
     "on-click": "${HOME}/.local/bin/startvpn",
-    "on-click-right": "${HOME}/.config/waybar/scripts/vpn-control.sh",
     "format": "{text}",
     "tooltip": true,
     "return-type": "json",
