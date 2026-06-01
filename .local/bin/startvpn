@@ -5,6 +5,7 @@ export PATH="/usr/bin:/usr/local/bin:/sbin:/bin:$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config/openvpn"
 CRED_FILE="$HOME/.vpn_credentials"
 LAST_SERVER_FILE="$HOME/.config/vpn-last-server"
+STOP_FLAG="/tmp/vpn_stop_requested"
 ROFI_PICKER=(-theme-str 'window {width: 550px;} listview { columns: 4; }' -i -dmenu -p "VPN")
 ROFI_MENU=(-theme-str 'window {width: 300px;}' -i -dmenu -p "VPN")
 
@@ -25,26 +26,30 @@ format_name() {
   fi
 }
 
+disconnect_vpn() {
+  touch "$STOP_FLAG"
+  sudo pkill openvpn
+  # wait for interface to drop
+  for _ in $(seq 10); do
+    sleep 0.5
+    ip link show tun0 2>/dev/null | grep -q "UP" || \
+    ip link show nordlynx 2>/dev/null | grep -q "UP" || break
+  done
+  notify_vpn normal "Disconnected"
+  refresh_waybar
+}
+
 # If VPN is already active, show manage menu instead of server picker
 for iface in nordlynx tun0; do
   if ip link show "$iface" &>/dev/null && ip link show "$iface" | grep -q "UP"; then
     choice=$(printf "󰌿 Disconnect\n󰑓 Switch Server" | rofi "${ROFI_MENU[@]}")
     case "$choice" in
       *Disconnect*)
-        sudo pkill openvpn
-        # wait for tun0/nordlynx to drop before refreshing status
-        for _ in $(seq 10); do
-          sleep 0.5
-          ip link show tun0 2>/dev/null | grep -q "UP" || \
-          ip link show nordlynx 2>/dev/null | grep -q "UP" || break
-        done
-        notify_vpn normal "Disconnected"
-        refresh_waybar
+        disconnect_vpn
         exit 0
         ;;
       *Switch*)
-        sudo pkill openvpn
-        sleep 1
+        disconnect_vpn
         ;;
       *)
         exit 0
@@ -98,6 +103,7 @@ else
 fi
 
 echo "$conf" > "$LAST_SERVER_FILE"
+rm -f "$STOP_FLAG"
 server=$(basename "$conf" .ovpn)
 
 captive_portal_check() {
@@ -137,7 +143,12 @@ captive_portal_check() {
 
     refresh_waybar
 
-    [[ $vpn_exit -eq 0 ]] && { notify_vpn normal "Disconnected cleanly"; exit 0; }
+    # Clean exit or intentional disconnect — don't reconnect
+    if [[ $vpn_exit -eq 0 ]] || [[ -f "$STOP_FLAG" ]]; then
+      rm -f "$STOP_FLAG"
+      notify_vpn normal "Disconnected"
+      exit 0
+    fi
 
     notify_vpn critical "VPN dropped (exit $vpn_exit)"
 
