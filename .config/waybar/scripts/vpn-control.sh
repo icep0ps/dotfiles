@@ -6,7 +6,7 @@ export PATH="/usr/bin:/usr/local/bin:/sbin:/bin:$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config/openvpn"
 LAST_SERVER_FILE="$HOME/.config/vpn-last-server"
 CRED_FILE="$HOME/.vpn_credentials"
-ROFI_ARGS=(-theme-str 'window {width: 400px;}' -i -dmenu -p "VPN")
+ROFI_ARGS=(-theme-str 'window {width: 250px;}' -i -dmenu -p "VPN")
 
 if pgrep -x openvpn >/dev/null; then
   config=$(ps aux | grep '[o]penvpn.*--config' | grep -o '/[^ ]*\.ovpn' | head -1)
