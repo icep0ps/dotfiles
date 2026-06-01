@@ -22,7 +22,7 @@ if pgrep -x openvpn >/dev/null; then
     *Switch*)
       sudo pkill openvpn
       sleep 1
-      kitty --detach -e startvpn
+      startvpn
       ;;
     *Logs*)
       kitty --detach -e journalctl -u openvpn -f
@@ -39,7 +39,7 @@ else
 
   case "$choice" in
     *"Connect to VPN"*)
-      kitty --detach -e startvpn
+      startvpn
       ;;
     *"Quick Connect"*)
       last_config=""
@@ -48,14 +48,14 @@ else
 
       if [[ -n "$last_config" ]]; then
         notify-send -i network-vpn "VPN" "Connecting to $(basename "$last_config" .ovpn)..."
-        kitty --detach -e bash -c "sudo openvpn --config '$last_config' --auth-user-pass '$CRED_FILE'; read -p 'Press enter to close...'"
+        startvpn "$last_config"
       else
         notify-send -u critical "VPN" "No VPN configs found in $CONFIG_DIR"
       fi
       ;;
     *Settings*)
       last=$(cat "$LAST_SERVER_FILE" 2>/dev/null || echo "none")
-      kitty --detach -e bash -c "echo 'OpenVPN configs in $CONFIG_DIR:'; ls -lh $CONFIG_DIR/*.ovpn 2>/dev/null; echo; echo 'Last used: $last'; read -p 'Press enter to close...'"
+      notify-send -i network-vpn "VPN" "Configs: $CONFIG_DIR | Last: $(basename "$last" .ovpn 2>/dev/null || echo none)"
       ;;
   esac
 fi
