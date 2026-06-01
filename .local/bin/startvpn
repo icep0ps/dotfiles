@@ -5,7 +5,7 @@ export PATH="/usr/bin:/usr/local/bin:/sbin:/bin:$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config/openvpn"
 CRED_FILE="$HOME/.vpn_credentials"
 LAST_SERVER_FILE="$HOME/.config/vpn-last-server"
-ROFI_ARGS=(-theme-str 'window {width: 800px;} listview { columns: 4; }' -i -dmenu -p "VPN")
+ROFI_ARGS=(-theme-str 'window {width: 550px;} listview { columns: 4; }' -i -dmenu -p "VPN")
 
 notify_vpn() {
   notify-send -u "$1" -i "network-vpn" "VPN" "$2" 2>/dev/null || true
