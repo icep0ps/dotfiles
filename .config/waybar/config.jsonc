@@ -50,7 +50,7 @@
   },
   "custom/power": {
     "format": "⏻",
-    "on-click": "${HOME}/.config/.archive/polybar-20260531/scripts/powermenu.sh",
+    "on-click": "${HOME}/.config/waybar/scripts/powermenu.sh",
     "tooltip": false,
   },
   "custom/spotify": {
@@ -72,7 +72,7 @@
   "custom/nordvpn": {
     "exec": "${HOME}/.config/waybar/scripts/nordvpn-status.sh",
     "interval": 10,
-    "on-click": "foot -e startvpn",
+    "on-click": "kitty --detach -e startvpn",
     "on-click-right": "${HOME}/.config/waybar/scripts/vpn-control.sh",
     "format": "{text}",
     "tooltip": true,

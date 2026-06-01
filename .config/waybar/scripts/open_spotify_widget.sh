@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-is_spotify_open=$(eww active-windows | grep -q "music" && echo true)
+EWW="$HOME/.local/share/eww/eww"
 
-if [ $is_spotify_open ]; then
-  eww close music
+if "$EWW" active-windows | grep -q "music"; then
+  "$EWW" close music
 else
-  eww open music
+  "$EWW" open music
 fi
-
-exit 0
