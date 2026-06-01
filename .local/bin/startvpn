@@ -5,10 +5,21 @@ export PATH="/usr/bin:/usr/local/bin:/sbin:/bin:$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config/openvpn"
 CRED_FILE="$HOME/.vpn_credentials"
 LAST_SERVER_FILE="$HOME/.config/vpn-last-server"
-ROFI_ARGS=(-theme-str 'window {width: 400px;}' -i -dmenu)
+ROFI_ARGS=(-theme-str 'window {width: 400px;}' -i -dmenu -p "VPN")
 
 notify_vpn() {
   notify-send -u "$1" -i "network-vpn" "VPN" "$2" 2>/dev/null || true
+}
+
+# Format ovpn filename into a clean label
+# za128.nordvpn.com.tcp → ZA #128  TCP
+format_name() {
+  local raw="$1"
+  if [[ "$raw" =~ ^([a-z]{2})([0-9]+)\.nordvpn\.com\.(tcp|udp)$ ]]; then
+    echo "${BASH_REMATCH[1]^^} #${BASH_REMATCH[2]}  ${BASH_REMATCH[3]^^}"
+  else
+    echo "${raw/.nordvpn.com/}"
+  fi
 }
 
 if [[ ! -d "$CONFIG_DIR" ]]; then
@@ -33,20 +44,22 @@ else
   last_used=""
   [[ -f "$LAST_SERVER_FILE" ]] && last_used=$(cat "$LAST_SERVER_FILE")
 
+  declare -A label_to_path
   items=()
   for path in "${configs[@]}"; do
-    name=$(basename "$path" .ovpn)
-    [[ "$path" == "$last_used" ]] && name+="  ★"
-    items+=("$name")
+    raw=$(basename "$path" .ovpn)
+    label=$(format_name "$raw")
+    [[ "$path" == "$last_used" ]] && label+="  ★"
+    items+=("$label")
+    label_to_path["${label%  ★}"]="$path"
   done
 
-  choice=$(printf '%s\n' "${items[@]}" | rofi "${ROFI_ARGS[@]}" -p "VPN Server")
+  choice=$(printf '%s\n' "${items[@]}" | rofi "${ROFI_ARGS[@]}")
   [[ -z "$choice" ]] && exit 0
 
-  name_clean="${choice%  ★}"
-  conf="$CONFIG_DIR/$name_clean.ovpn"
-  if [[ ! -f "$conf" ]]; then
-    notify_vpn critical "Config not found: $conf"
+  conf="${label_to_path[${choice%  ★}]}"
+  if [[ -z "$conf" || ! -f "$conf" ]]; then
+    notify_vpn critical "Config not found for: $choice"
     exit 1
   fi
 fi
