@@ -32,6 +32,12 @@ for iface in nordlynx tun0; do
     case "$choice" in
       *Disconnect*)
         sudo pkill openvpn
+        # wait for tun0/nordlynx to drop before refreshing status
+        for _ in $(seq 10); do
+          sleep 0.5
+          ip link show tun0 2>/dev/null | grep -q "UP" || \
+          ip link show nordlynx 2>/dev/null | grep -q "UP" || break
+        done
         notify_vpn normal "Disconnected"
         refresh_waybar
         exit 0

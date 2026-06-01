@@ -37,6 +37,7 @@
     "format-wifi": "  {essid} ({signalStrength}%)",
     "format-ethernet": "󰈀  Wired",
     "format-disconnected": "󰤮  Disconnected",
+    "ignored-interfaces": ["tun0", "tun1", "nordlynx"],
     "interval": 10,
   },
   "memory": {
