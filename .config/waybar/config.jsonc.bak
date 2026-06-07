@@ -12,7 +12,6 @@
     "network",
     "memory",
     "clock",
-    "tray",
     "custom/power",
   ],
   "sway/workspaces": {
@@ -38,7 +37,6 @@
     "format-wifi": "  {essid} ({signalStrength}%)",
     "format-ethernet": "󰈀  Wired",
     "format-disconnected": "󰤮  Disconnected",
-    "ignored-interfaces": ["tun0", "tun1", "nordlynx"],
     "interval": 10,
   },
   "memory": {
@@ -52,7 +50,7 @@
   },
   "custom/power": {
     "format": "⏻",
-    "on-click": "${HOME}/.config/waybar/scripts/powermenu.sh",
+    "on-click": "${HOME}/.config/.archive/polybar-20260531/scripts/powermenu.sh",
     "tooltip": false,
   },
   "custom/spotify": {
@@ -74,8 +72,6 @@
   "custom/nordvpn": {
     "exec": "${HOME}/.config/waybar/scripts/nordvpn-status.sh",
     "interval": 10,
-    "signal": 1,
-    "on-click": "${HOME}/.local/bin/startvpn",
     "format": "{text}",
     "tooltip": true,
     "return-type": "json",
