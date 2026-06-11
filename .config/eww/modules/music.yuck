@@ -25,8 +25,13 @@
        :height 120
        :spacing 15
        :space-evenly false
-    (label :text "󰝚" :class "loading-icon")
-    (box :orientation "vertical" :valign "center" :halign "start" :spacing 5 :space-evenly false
+    (box :class "album-art album-art-empty" 
+         :width  90
+         :height 90
+         :halign "center"
+         :valign "center"
+      (label :text "󰝚" :class "empty-icon"))
+    (box :orientation "vertical" :valign "center" :halign "center" :spacing 5 :space-evenly false 
       (label :text "Loading Library..." :halign "start" :class "title")
       (label :text "Please wait" :halign "start"))))
 
@@ -73,8 +78,8 @@
        :height 120
        :space-evenly false
     (box :class "album-art album-art-empty" 
-         :width 120 
-         :height 120
+         :width  90
+         :height 90
          :halign "center"
          :valign "center"
       (label :text "󰝚" :class "empty-icon"))
@@ -91,11 +96,10 @@
 (defwidget music-switcher []
   (stack
     :selected {
-      music_data.status == "Stopped" && music_data.title == "Loading..." ? 0 :
-      (music_data.status == "Playing" || music_data.status == "Paused") ? 1 :
-      2}
-    :transition "crossfade"
-    :transition-duration "400ms"
+               music_data.status == "Stopped" && music_data.title == "Loading..." ? 0 :
+               (music_data.status == "Playing" || music_data.status == "Paused") ? 1 :
+               2}
+    :transition "none"
     (music-loading)  ; 0 — initialising
     (music-player)   ; 1 — active
     (music-empty)))  ; 2 — idle
